@@ -1,0 +1,375 @@
+# AlphaESS VitaPower 3600 AC – Modbus TCP package (zoveel mogelijk direct uit registers)
+# Plaatsen in /config/packages/vitapower.yaml  (configuration.yaml: homeassistant: packages: !include_dir_named packages)
+# Na wijzigen: HA herstarten (Modbus-YAML herlaadt niet).
+#
+# Let op: de VitaPower accepteert maar één Modbus TCP-verbinding.
+#   Scannen met modbus_scan.py: eerst modbus.stop (hub: vitapower), daarna modbus.restart.
+#
+# Geverifieerd met scans 2026-11-10 (unit 85, holding registers, FC03):
+#   0x040C int32 AC-vermogen  : +797 W ontladen / -3682 W laden (= ingesteld 3680 W)
+#   0x0126 int16 DC-vermogen  : +857 W / -3405 W  (rendement ~93 %)
+#   0x0102 SOC x0,1 %         : 32,8 % = app
+#   0x0120/0x0122/0x0124 x0,1 kWh : tellers lopen, maar worden periodiek (niet live) bijgewerkt
+#   0x012C/0x012D             : max laad-/ontlaadvermogen BMS (= spanning x 0x0111 / 0x0112)
+# Teken: + = ontladen, - = laden (zoals HA's energiedashboard verwacht).
+
+modbus:
+  - name: vitapower
+    type: tcp
+    host: 192.168.1.28
+    port: 502
+    timeout: 5
+    delay: 1
+    message_wait_milliseconds: 30
+    sensors:
+      # ---------------------------------------------------------------- kern
+      - name: VitaPower SOC
+        unique_id: vitapower_soc
+        device_address: 85
+        address: 258           # 0x0102
+        input_type: holding
+        data_type: uint16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "%"
+        device_class: battery
+        state_class: measurement
+        scan_interval: 30
+
+      - name: VitaPower AC vermogen
+        unique_id: vitapower_ac_power
+        device_address: 85
+        address: 1036          # 0x040C-0x040D
+        input_type: holding
+        data_type: int32
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        scan_interval: 5
+
+      - name: VitaPower DC vermogen
+        unique_id: vitapower_dc_power
+        device_address: 85
+        address: 294           # 0x0126
+        input_type: holding
+        data_type: int16
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        scan_interval: 5
+
+      # ------------------------------------------------- energietellers (0,1 kWh)
+      - name: VitaPower geladen
+        unique_id: vitapower_bat_energy_charged
+        device_address: 85
+        address: 288           # 0x0120-0x0121
+        input_type: holding
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: kWh
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 60
+
+      - name: VitaPower ontladen
+        unique_id: vitapower_bat_energy_discharged
+        device_address: 85
+        address: 290           # 0x0122-0x0123
+        input_type: holding
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: kWh
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 60
+
+      - name: VitaPower geladen van net
+        unique_id: vitapower_bat_energy_charged_grid
+        device_address: 85
+        address: 292           # 0x0124-0x0125
+        input_type: holding
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: kWh
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 60
+
+      # ------------------------------------------------------------ batterij
+      - name: VitaPower batterijspanning
+        unique_id: vitapower_bat_voltage
+        device_address: 85
+        address: 256           # 0x0100
+        input_type: holding
+        data_type: uint16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: V
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 30
+
+      - name: VitaPower batterijstroom
+        unique_id: vitapower_bat_current
+        device_address: 85
+        address: 257           # 0x0101  (- = laden)
+        input_type: holding
+        data_type: int16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: A
+        device_class: current
+        state_class: measurement
+        scan_interval: 30
+
+      - name: VitaPower min celspanning
+        unique_id: vitapower_cell_v_min
+        device_address: 85
+        address: 263           # 0x0107
+        input_type: holding
+        data_type: uint16
+        scale: 0.001
+        precision: 3
+        unit_of_measurement: V
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 60
+
+      - name: VitaPower max celspanning
+        unique_id: vitapower_cell_v_max
+        device_address: 85
+        address: 266           # 0x010A
+        input_type: holding
+        data_type: uint16
+        scale: 0.001
+        precision: 3
+        unit_of_measurement: V
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 60
+
+      - name: VitaPower min celtemperatuur
+        unique_id: vitapower_cell_t_min
+        device_address: 85
+        address: 269           # 0x010D
+        input_type: holding
+        data_type: int16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 60
+
+      - name: VitaPower max celtemperatuur
+        unique_id: vitapower_cell_t_max
+        device_address: 85
+        address: 272           # 0x0110
+        input_type: holding
+        data_type: int16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 60
+
+      - name: VitaPower SOH
+        unique_id: vitapower_soh
+        device_address: 85
+        address: 283           # 0x011B
+        input_type: holding
+        data_type: uint16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "%"
+        state_class: measurement
+        scan_interval: 3600
+
+      - name: VitaPower max laadvermogen
+        unique_id: vitapower_max_charge_power
+        device_address: 85
+        address: 300           # 0x012C (BMS-limiet)
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        scan_interval: 60
+
+      - name: VitaPower max ontlaadvermogen
+        unique_id: vitapower_max_discharge_power
+        device_address: 85
+        address: 301           # 0x012D (BMS-limiet)
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        scan_interval: 60
+
+      # ------------------------------------------------------------ omvormer
+      - name: VitaPower netspanning
+        unique_id: vitapower_grid_voltage
+        device_address: 85
+        address: 1024          # 0x0400
+        input_type: holding
+        data_type: uint16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: V
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 30
+
+      - name: VitaPower AC stroom
+        unique_id: vitapower_ac_current
+        device_address: 85
+        address: 1027          # 0x0403 (altijd positief)
+        input_type: holding
+        data_type: uint16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: A
+        device_class: current
+        state_class: measurement
+        scan_interval: 30
+
+      - name: VitaPower netfrequentie
+        unique_id: vitapower_grid_frequency
+        device_address: 85
+        address: 1052          # 0x041C
+        input_type: holding
+        data_type: uint16
+        scale: 0.01
+        precision: 2
+        unit_of_measurement: Hz
+        device_class: frequency
+        state_class: measurement
+        scan_interval: 60
+
+      - name: VitaPower omvormertemperatuur
+        unique_id: vitapower_inverter_temp
+        device_address: 85
+        address: 1077          # 0x0435
+        input_type: holding
+        data_type: int16
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        scan_interval: 60
+
+      # ------------------------------------------- sturing door AlphaESS (dispatch)
+      - name: VitaPower dispatch actief
+        unique_id: vitapower_dispatch_start
+        device_address: 85
+        address: 2176          # 0x0880 (1 = cloud/AI stuurt)
+        input_type: holding
+        data_type: uint16
+        scan_interval: 30
+
+      - name: VitaPower dispatch vermogen
+        unique_id: vitapower_dispatch_power
+        device_address: 85
+        address: 2177          # 0x0881-0x0882, offset 32000
+        input_type: holding
+        data_type: int32
+        offset: -32000
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        scan_interval: 30
+
+      # ------------------------------------------------------- instellingen
+      - name: VitaPower ontlaadgrens SOC
+        unique_id: vitapower_discharge_cutoff_soc
+        device_address: 85
+        address: 2128          # 0x0850
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: "%"
+        scan_interval: 300
+
+      - name: VitaPower laadgrens SOC
+        unique_id: vitapower_charge_cutoff_soc
+        device_address: 85
+        address: 2133          # 0x0855
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: "%"
+        scan_interval: 300
+
+      # ------------------------------------------------- storingen (0 = ok)
+      - name: VitaPower batterij waarschuwing
+        unique_id: vitapower_bat_warning
+        device_address: 85
+        address: 284           # 0x011C-0x011D
+        input_type: holding
+        data_type: uint32
+        scan_interval: 60
+
+      - name: VitaPower batterij fout
+        unique_id: vitapower_bat_fault
+        device_address: 85
+        address: 286           # 0x011E-0x011F
+        input_type: holding
+        data_type: uint32
+        scan_interval: 60
+
+      - name: VitaPower omvormer fout
+        unique_id: vitapower_inv_fault
+        device_address: 85
+        address: 1082          # 0x043A-0x043B
+        input_type: holding
+        data_type: uint32
+        scan_interval: 60
+
+      - name: VitaPower systeem fout
+        unique_id: vitapower_system_fault
+        device_address: 85
+        address: 2260          # 0x08D4-0x08D5
+        input_type: holding
+        data_type: uint32
+        scan_interval: 60
+
+      # ---------------------------------------------------------- firmware
+      - name: VitaPower firmware omvormer
+        unique_id: vitapower_fw_inverter
+        device_address: 85
+        address: 1600          # 0x0640, "V3.05.011"
+        input_type: holding
+        data_type: string
+        count: 5
+        scan_interval: 86400
+
+      - name: VitaPower firmware ARM
+        unique_id: vitapower_fw_arm
+        device_address: 85
+        address: 1605          # 0x0645, "V2.01.003"
+        input_type: holding
+        data_type: string
+        count: 5
+        scan_interval: 86400
+
+# Enige berekening: omvormer-rendement (geen register voor gevonden)
+#   ontladen: AC / DC     laden: DC / AC     onder 100 W: niet beschikbaar
+template:
+  - sensor:
+      - name: VitaPower rendement
+        unique_id: vitapower_conversion_efficiency
+        unit_of_measurement: "%"
+        state_class: measurement
+        icon: mdi:percent
+        availability: >
+          {{ has_value('sensor.vitapower_ac_vermogen') and has_value('sensor.vitapower_dc_vermogen')
+             and states('sensor.vitapower_ac_vermogen') | float(0) | abs > 100
+             and states('sensor.vitapower_dc_vermogen') | float(0) | abs > 100 }}
+        state: >
+          {% set ac = states('sensor.vitapower_ac_vermogen') | float(0) %}
+          {% set dc = states('sensor.vitapower_dc_vermogen') | float(0) %}
+          {% if ac > 0 %}{{ (ac / dc * 100) | round(1) }}{% else %}{{ (dc / ac * 100) | round(1) }}{% endif %}

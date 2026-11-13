@@ -1,0 +1,14 @@
+{
+  "domain": "alphaess_vitapower",
+  "name": "AlphaESS VitaPower",
+  "codeowners": ["@onsmam"],
+  "config_flow": true,
+  "dependencies": ["modbus"],
+  "documentation": "https://github.com/onsmam/HA-Alphaess-vitapower",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/onsmam/HA-Alphaess-vitapower/issues",
+  "loggers": ["modbus_connection", "tmodbus"],
+  "requirements": [],
+  "version": "0.1.0"
+}

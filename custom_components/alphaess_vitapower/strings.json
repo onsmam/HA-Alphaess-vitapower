@@ -1,0 +1,248 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "AlphaESS VitaPower",
+        "description": "Enter the address of the VitaPower. Modbus TCP only answers on the LAN port, not over Wi-Fi. The battery accepts a single Modbus client: remove any other Modbus connection to it (such as a YAML `modbus:` hub) first.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "unit_id": "Unit ID"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the VitaPower (LAN port).",
+          "port": "The Modbus TCP port, 502 by default.",
+          "unit_id": "The VitaPower answers on unit ID 85."
+        }
+      },
+      "reconfigure": {
+        "description": "Update the address Home Assistant reaches this VitaPower at.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "unit_id": "Unit ID"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the VitaPower (LAN port).",
+          "port": "The Modbus TCP port, 502 by default.",
+          "unit_id": "The VitaPower answers on unit ID 85."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect. Check the address, that the LAN cable is used and that no other Modbus client is connected.",
+      "link_settings_in_use": "This address is already in use by another integration with different link settings.",
+      "no_serial": "The device answers, but reports no serial number at 0x0743. Is it a VitaPower?",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "Device is already configured",
+      "reconfigure_successful": "Re-configuration was successful",
+      "unique_id_mismatch": "The device at this address has a different serial number. Enter the address of the same VitaPower."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "dispatch_active": {
+        "name": "Cloud dispatch"
+      },
+      "battery_warning": {
+        "name": "Battery warning",
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "battery_fault": {
+        "name": "Battery fault",
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "inverter_fault": {
+        "name": "Inverter fault",
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "system_fault": {
+        "name": "System fault",
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      }
+    },
+    "sensor": {
+      "soc": {
+        "name": "State of charge"
+      },
+      "ac_power": {
+        "name": "AC power"
+      },
+      "dc_power": {
+        "name": "DC battery power"
+      },
+      "energy_charged": {
+        "name": "Energy charged"
+      },
+      "energy_discharged": {
+        "name": "Energy discharged"
+      },
+      "energy_charged_grid": {
+        "name": "Energy charged from grid"
+      },
+      "efficiency": {
+        "name": "Conversion efficiency"
+      },
+      "battery_voltage": {
+        "name": "Battery voltage"
+      },
+      "battery_current": {
+        "name": "Battery current"
+      },
+      "cell_voltage_min": {
+        "name": "Lowest cell voltage",
+        "state_attributes": {
+          "pack": {
+            "name": "Pack"
+          },
+          "cell": {
+            "name": "Cell"
+          }
+        }
+      },
+      "cell_voltage_max": {
+        "name": "Highest cell voltage",
+        "state_attributes": {
+          "pack": {
+            "name": "Pack"
+          },
+          "cell": {
+            "name": "Cell"
+          }
+        }
+      },
+      "cell_temperature_min": {
+        "name": "Lowest cell temperature",
+        "state_attributes": {
+          "pack": {
+            "name": "Pack"
+          },
+          "cell": {
+            "name": "Cell"
+          }
+        }
+      },
+      "cell_temperature_max": {
+        "name": "Highest cell temperature",
+        "state_attributes": {
+          "pack": {
+            "name": "Pack"
+          },
+          "cell": {
+            "name": "Cell"
+          }
+        }
+      },
+      "soh": {
+        "name": "State of health"
+      },
+      "max_charge_power": {
+        "name": "Max charge power"
+      },
+      "max_discharge_power": {
+        "name": "Max discharge power"
+      },
+      "max_charge_current": {
+        "name": "Max charge current"
+      },
+      "max_discharge_current": {
+        "name": "Max discharge current"
+      },
+      "max_charge_voltage": {
+        "name": "Max charge voltage"
+      },
+      "min_discharge_voltage": {
+        "name": "Min discharge voltage"
+      },
+      "capacity": {
+        "name": "Capacity"
+      },
+      "module_count": {
+        "name": "Battery modules"
+      },
+      "battery_status": {
+        "name": "Battery status code"
+      },
+      "relay_status": {
+        "name": "Relay status code"
+      },
+      "grid_voltage": {
+        "name": "Grid voltage"
+      },
+      "ac_current": {
+        "name": "AC current"
+      },
+      "grid_frequency": {
+        "name": "Grid frequency"
+      },
+      "inverter_temperature": {
+        "name": "Inverter temperature"
+      },
+      "inverter_work_mode": {
+        "name": "Inverter work mode code"
+      },
+      "discharge_cutoff_soc": {
+        "name": "Discharge cut-off SOC"
+      },
+      "charge_cutoff_soc": {
+        "name": "Charge cut-off SOC"
+      },
+      "max_feed_in": {
+        "name": "Max feed-in"
+      },
+      "dispatch_power": {
+        "name": "Dispatch power"
+      },
+      "dispatch_soc": {
+        "name": "Dispatch SOC target"
+      },
+      "dispatch_mode": {
+        "name": "Dispatch mode code"
+      },
+      "dispatch_duration": {
+        "name": "Dispatch duration"
+      },
+      "firmware_inverter": {
+        "name": "Inverter firmware"
+      },
+      "firmware_arm": {
+        "name": "ARM firmware"
+      },
+      "bms_version": {
+        "name": "BMS version"
+      }
+    }
+  },
+  "exceptions": {
+    "communication_error": {
+      "message": "Communication with the VitaPower failed: {error}"
+    },
+    "link_settings_in_use": {
+      "message": "The VitaPower is already in use with different link settings: {error}"
+    },
+    "short_read": {
+      "message": "Block {block} returned {received} of {expected} registers."
+    },
+    "wrong_device": {
+      "message": "A different device (serial {serial}) now answers at this address."
+    }
+  }
+}

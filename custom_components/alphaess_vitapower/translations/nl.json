@@ -1,0 +1,248 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "AlphaESS VitaPower",
+        "description": "Vul het adres van de VitaPower in. Modbus TCP werkt alleen via de LAN-poort, niet via wifi. De batterij accepteert maar één Modbus-client: verwijder eerst elke andere Modbus-verbinding ernaartoe (zoals een YAML `modbus:`-hub).",
+        "data": {
+          "host": "Host",
+          "port": "Poort",
+          "unit_id": "Unit-ID"
+        },
+        "data_description": {
+          "host": "IP-adres of hostnaam van de VitaPower (LAN-poort).",
+          "port": "De Modbus TCP-poort, standaard 502.",
+          "unit_id": "De VitaPower antwoordt op unit-ID 85."
+        }
+      },
+      "reconfigure": {
+        "description": "Pas het adres aan waarop Home Assistant deze VitaPower bereikt.",
+        "data": {
+          "host": "Host",
+          "port": "Poort",
+          "unit_id": "Unit-ID"
+        },
+        "data_description": {
+          "host": "IP-adres of hostnaam van de VitaPower (LAN-poort).",
+          "port": "De Modbus TCP-poort, standaard 502.",
+          "unit_id": "De VitaPower antwoordt op unit-ID 85."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbinden mislukt. Controleer het adres, of de LAN-kabel gebruikt wordt en of er geen andere Modbus-client verbonden is.",
+      "link_settings_in_use": "Dit adres wordt al door een andere integratie gebruikt met andere verbindingsinstellingen.",
+      "no_serial": "Het apparaat antwoordt, maar geeft geen serienummer op 0x0743. Is het een VitaPower?",
+      "unknown": "Onverwachte fout"
+    },
+    "abort": {
+      "already_configured": "Apparaat is al geconfigureerd",
+      "reconfigure_successful": "Herconfiguratie geslaagd",
+      "unique_id_mismatch": "Het apparaat op dit adres heeft een ander serienummer. Vul het adres van dezelfde VitaPower in."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "dispatch_active": {
+        "name": "Cloud-dispatch"
+      },
+      "battery_warning": {
+        "name": "Batterijwaarschuwing",
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "battery_fault": {
+        "name": "Batterijfout",
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "inverter_fault": {
+        "name": "Omvormerfout",
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      },
+      "system_fault": {
+        "name": "Systeemfout",
+        "state_attributes": {
+          "code": {
+            "name": "Code"
+          }
+        }
+      }
+    },
+    "sensor": {
+      "soc": {
+        "name": "Laadtoestand"
+      },
+      "ac_power": {
+        "name": "AC-vermogen"
+      },
+      "dc_power": {
+        "name": "DC-batterijvermogen"
+      },
+      "energy_charged": {
+        "name": "Energie geladen"
+      },
+      "energy_discharged": {
+        "name": "Energie ontladen"
+      },
+      "energy_charged_grid": {
+        "name": "Energie geladen van net"
+      },
+      "efficiency": {
+        "name": "Rendement"
+      },
+      "battery_voltage": {
+        "name": "Batterijspanning"
+      },
+      "battery_current": {
+        "name": "Batterijstroom"
+      },
+      "cell_voltage_min": {
+        "name": "Laagste celspanning",
+        "state_attributes": {
+          "pack": {
+            "name": "Pack"
+          },
+          "cell": {
+            "name": "Cel"
+          }
+        }
+      },
+      "cell_voltage_max": {
+        "name": "Hoogste celspanning",
+        "state_attributes": {
+          "pack": {
+            "name": "Pack"
+          },
+          "cell": {
+            "name": "Cel"
+          }
+        }
+      },
+      "cell_temperature_min": {
+        "name": "Laagste celtemperatuur",
+        "state_attributes": {
+          "pack": {
+            "name": "Pack"
+          },
+          "cell": {
+            "name": "Cel"
+          }
+        }
+      },
+      "cell_temperature_max": {
+        "name": "Hoogste celtemperatuur",
+        "state_attributes": {
+          "pack": {
+            "name": "Pack"
+          },
+          "cell": {
+            "name": "Cel"
+          }
+        }
+      },
+      "soh": {
+        "name": "Gezondheid (SOH)"
+      },
+      "max_charge_power": {
+        "name": "Max laadvermogen"
+      },
+      "max_discharge_power": {
+        "name": "Max ontlaadvermogen"
+      },
+      "max_charge_current": {
+        "name": "Max laadstroom"
+      },
+      "max_discharge_current": {
+        "name": "Max ontlaadstroom"
+      },
+      "max_charge_voltage": {
+        "name": "Max laadspanning"
+      },
+      "min_discharge_voltage": {
+        "name": "Min ontlaadspanning"
+      },
+      "capacity": {
+        "name": "Capaciteit"
+      },
+      "module_count": {
+        "name": "Batterijmodules"
+      },
+      "battery_status": {
+        "name": "Batterijstatus (code)"
+      },
+      "relay_status": {
+        "name": "Relaisstatus (code)"
+      },
+      "grid_voltage": {
+        "name": "Netspanning"
+      },
+      "ac_current": {
+        "name": "AC-stroom"
+      },
+      "grid_frequency": {
+        "name": "Netfrequentie"
+      },
+      "inverter_temperature": {
+        "name": "Omvormertemperatuur"
+      },
+      "inverter_work_mode": {
+        "name": "Werkmodus omvormer (code)"
+      },
+      "discharge_cutoff_soc": {
+        "name": "Ontlaadgrens SOC"
+      },
+      "charge_cutoff_soc": {
+        "name": "Laadgrens SOC"
+      },
+      "max_feed_in": {
+        "name": "Max teruglevering"
+      },
+      "dispatch_power": {
+        "name": "Dispatch-vermogen"
+      },
+      "dispatch_soc": {
+        "name": "Dispatch SOC-doel"
+      },
+      "dispatch_mode": {
+        "name": "Dispatch-modus (code)"
+      },
+      "dispatch_duration": {
+        "name": "Dispatch-duur"
+      },
+      "firmware_inverter": {
+        "name": "Firmware omvormer"
+      },
+      "firmware_arm": {
+        "name": "Firmware ARM"
+      },
+      "bms_version": {
+        "name": "BMS-versie"
+      }
+    }
+  },
+  "exceptions": {
+    "communication_error": {
+      "message": "Communicatie met de VitaPower mislukt: {error}"
+    },
+    "link_settings_in_use": {
+      "message": "De VitaPower is al in gebruik met andere verbindingsinstellingen: {error}"
+    },
+    "short_read": {
+      "message": "Blok {block} gaf {received} van {expected} registers terug."
+    },
+    "wrong_device": {
+      "message": "Op dit adres antwoordt nu een ander apparaat (serienummer {serial})."
+    }
+  }
+}

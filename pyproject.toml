@@ -1,0 +1,9 @@
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+extend-exclude = ["tools/modbus_scan.py"]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["custom_components", "homeassistant", "pytest_homeassistant_custom_component"]
+combine-as-imports = true

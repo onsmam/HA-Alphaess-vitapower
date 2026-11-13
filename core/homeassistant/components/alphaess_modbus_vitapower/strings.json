@@ -1,0 +1,157 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]",
+      "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]",
+      "unique_id_mismatch": "Please reconfigure the same battery you originally set up."
+    },
+    "error": {
+      "cannot_connect": "Failed to connect: {error}",
+      "not_a_vitapower": "The device answered, but did not report a VitaPower serial number."
+    },
+    "step": {
+      "reconfigure": {
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]",
+          "port": "[%key:common::config_flow::data::port%]",
+          "unit_id": "[%key:component::alphaess_modbus_vitapower::config::step::user::data::unit_id%]"
+        },
+        "data_description": {
+          "host": "[%key:component::alphaess_modbus_vitapower::config::step::user::data_description::host%]",
+          "port": "[%key:component::modbus::common::tcp_port_description%]",
+          "unit_id": "[%key:component::alphaess_modbus_vitapower::config::step::user::data_description::unit_id%]"
+        },
+        "description": "Update where this battery is reached, for example after it moved to another address. It has to stay the same battery: the serial number that answers is checked against the one this entry was set up with."
+      },
+      "user": {
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]",
+          "port": "[%key:common::config_flow::data::port%]",
+          "unit_id": "Modbus unit ID"
+        },
+        "data_description": {
+          "host": "The hostname or IP address of the battery's LAN port. Modbus TCP is not served over Wi-Fi.",
+          "port": "[%key:component::modbus::common::tcp_port_description%]",
+          "unit_id": "The battery's Modbus unit ID. A VitaPower answers on 85."
+        },
+        "description": "Set up an AlphaESS VitaPower reached over its LAN port. The battery accepts a single Modbus client, so stop any other software that polls it first."
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "battery_fault": {
+        "name": "Battery fault"
+      },
+      "battery_warning": {
+        "name": "Battery warning"
+      },
+      "dispatch_active": {
+        "name": "Remote dispatch"
+      },
+      "inverter_fault": {
+        "name": "Inverter fault"
+      },
+      "system_fault": {
+        "name": "System fault"
+      }
+    },
+    "sensor": {
+      "ac_current": {
+        "name": "AC current"
+      },
+      "ac_power": {
+        "name": "AC power"
+      },
+      "battery_current": {
+        "name": "Battery current"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "battery_voltage": {
+        "name": "Battery voltage"
+      },
+      "capacity": {
+        "name": "Capacity"
+      },
+      "charge_cutoff_soc": {
+        "name": "Charge cut-off state of charge"
+      },
+      "discharge_cutoff_soc": {
+        "name": "Discharge cut-off state of charge"
+      },
+      "dispatch_duration": {
+        "name": "Dispatch duration"
+      },
+      "dispatch_power": {
+        "name": "Dispatch power"
+      },
+      "dispatch_soc_target": {
+        "name": "Dispatch state of charge target"
+      },
+      "efficiency": {
+        "name": "Conversion efficiency"
+      },
+      "energy_charged": {
+        "name": "Energy charged"
+      },
+      "energy_charged_from_grid": {
+        "name": "Energy charged from grid"
+      },
+      "energy_discharged": {
+        "name": "Energy discharged"
+      },
+      "grid_frequency": {
+        "name": "Grid frequency"
+      },
+      "grid_voltage": {
+        "name": "Grid voltage"
+      },
+      "inverter_temperature": {
+        "name": "Inverter temperature"
+      },
+      "max_cell_temperature": {
+        "name": "Highest cell temperature"
+      },
+      "max_cell_voltage": {
+        "name": "Highest cell voltage"
+      },
+      "max_charge_current": {
+        "name": "Maximum charge current"
+      },
+      "max_charge_power": {
+        "name": "Maximum charge power"
+      },
+      "max_discharge_current": {
+        "name": "Maximum discharge current"
+      },
+      "max_discharge_power": {
+        "name": "Maximum discharge power"
+      },
+      "max_feed_in": {
+        "name": "Maximum feed-in"
+      },
+      "min_cell_temperature": {
+        "name": "Lowest cell temperature"
+      },
+      "min_cell_voltage": {
+        "name": "Lowest cell voltage"
+      },
+      "state_of_health": {
+        "name": "State of health"
+      }
+    }
+  },
+  "exceptions": {
+    "modbus_error": {
+      "message": "Error communicating with the battery."
+    },
+    "no_component_answered": {
+      "message": "No component answered."
+    },
+    "wrong_device": {
+      "message": "A different battery now answers at this address."
+    }
+  }
+}

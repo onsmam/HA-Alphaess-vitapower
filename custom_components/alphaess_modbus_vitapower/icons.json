@@ -1,0 +1,32 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "dispatch_active": {
+        "default": "mdi:cloud-outline",
+        "state": {
+          "on": "mdi:cloud-sync-outline"
+        }
+      }
+    },
+    "sensor": {
+      "charge_cutoff_soc": {
+        "default": "mdi:battery-arrow-up-outline"
+      },
+      "discharge_cutoff_soc": {
+        "default": "mdi:battery-arrow-down-outline"
+      },
+      "dispatch_soc_target": {
+        "default": "mdi:battery-sync-outline"
+      },
+      "efficiency": {
+        "default": "mdi:percent-outline"
+      },
+      "max_feed_in": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "state_of_health": {
+        "default": "mdi:battery-heart-variant"
+      }
+    }
+  }
+}

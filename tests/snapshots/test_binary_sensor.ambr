@@ -1,0 +1,256 @@
+# serializer version: 1
+# name: test_all_entities[binary_sensor.vitapower_battery_fault-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': None,
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'binary_sensor',
+    'entity_category': <EntityCategory.DIAGNOSTIC: 'diagnostic'>,
+    'entity_id': 'binary_sensor.vitapower_battery_fault',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Battery fault',
+    'options': dict({
+    }),
+    'original_device_class': <BinarySensorDeviceClass.PROBLEM: 'problem'>,
+    'original_icon': None,
+    'original_name': 'Battery fault',
+    'platform': 'alphaess_modbus_vitapower',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'battery_fault',
+    'unique_id': 'ALG0REDACTED001_battery_fault',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_all_entities[binary_sensor.vitapower_battery_fault-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      <EntityStateAttribute.DEVICE_CLASS: 'device_class'>: 'problem',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'VitaPower Battery fault',
+    }),
+    'context': <ANY>,
+    'entity_id': 'binary_sensor.vitapower_battery_fault',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'off',
+  })
+# ---
+# name: test_all_entities[binary_sensor.vitapower_battery_warning-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': None,
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'binary_sensor',
+    'entity_category': <EntityCategory.DIAGNOSTIC: 'diagnostic'>,
+    'entity_id': 'binary_sensor.vitapower_battery_warning',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Battery warning',
+    'options': dict({
+    }),
+    'original_device_class': <BinarySensorDeviceClass.PROBLEM: 'problem'>,
+    'original_icon': None,
+    'original_name': 'Battery warning',
+    'platform': 'alphaess_modbus_vitapower',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'battery_warning',
+    'unique_id': 'ALG0REDACTED001_battery_warning',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_all_entities[binary_sensor.vitapower_battery_warning-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      <EntityStateAttribute.DEVICE_CLASS: 'device_class'>: 'problem',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'VitaPower Battery warning',
+    }),
+    'context': <ANY>,
+    'entity_id': 'binary_sensor.vitapower_battery_warning',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'off',
+  })
+# ---
+# name: test_all_entities[binary_sensor.vitapower_inverter_fault-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': None,
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'binary_sensor',
+    'entity_category': <EntityCategory.DIAGNOSTIC: 'diagnostic'>,
+    'entity_id': 'binary_sensor.vitapower_inverter_fault',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Inverter fault',
+    'options': dict({
+    }),
+    'original_device_class': <BinarySensorDeviceClass.PROBLEM: 'problem'>,
+    'original_icon': None,
+    'original_name': 'Inverter fault',
+    'platform': 'alphaess_modbus_vitapower',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'inverter_fault',
+    'unique_id': 'ALG0REDACTED001_inverter_fault',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_all_entities[binary_sensor.vitapower_inverter_fault-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      <EntityStateAttribute.DEVICE_CLASS: 'device_class'>: 'problem',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'VitaPower Inverter fault',
+    }),
+    'context': <ANY>,
+    'entity_id': 'binary_sensor.vitapower_inverter_fault',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'off',
+  })
+# ---
+# name: test_all_entities[binary_sensor.vitapower_remote_dispatch-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': None,
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'binary_sensor',
+    'entity_category': None,
+    'entity_id': 'binary_sensor.vitapower_remote_dispatch',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Remote dispatch',
+    'options': dict({
+    }),
+    'original_device_class': <BinarySensorDeviceClass.RUNNING: 'running'>,
+    'original_icon': None,
+    'original_name': 'Remote dispatch',
+    'platform': 'alphaess_modbus_vitapower',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'dispatch_active',
+    'unique_id': 'ALG0REDACTED001_dispatch_active',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_all_entities[binary_sensor.vitapower_remote_dispatch-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      <EntityStateAttribute.DEVICE_CLASS: 'device_class'>: 'running',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'VitaPower Remote dispatch',
+    }),
+    'context': <ANY>,
+    'entity_id': 'binary_sensor.vitapower_remote_dispatch',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'on',
+  })
+# ---
+# name: test_all_entities[binary_sensor.vitapower_system_fault-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': None,
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'binary_sensor',
+    'entity_category': <EntityCategory.DIAGNOSTIC: 'diagnostic'>,
+    'entity_id': 'binary_sensor.vitapower_system_fault',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'System fault',
+    'options': dict({
+    }),
+    'original_device_class': <BinarySensorDeviceClass.PROBLEM: 'problem'>,
+    'original_icon': None,
+    'original_name': 'System fault',
+    'platform': 'alphaess_modbus_vitapower',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'system_fault',
+    'unique_id': 'ALG0REDACTED001_system_fault',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_all_entities[binary_sensor.vitapower_system_fault-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      <EntityStateAttribute.DEVICE_CLASS: 'device_class'>: 'problem',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'VitaPower System fault',
+    }),
+    'context': <ANY>,
+    'entity_id': 'binary_sensor.vitapower_system_fault',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'off',
+  })
+# ---

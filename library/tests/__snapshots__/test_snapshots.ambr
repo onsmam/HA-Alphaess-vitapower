@@ -1,0 +1,265 @@
+# serializer version: 1
+# name: test_scan[charging_3680w][decoded]
+  dict({
+    'battery': dict({
+      'bms_version @ 0x0115': 102,
+      'capacity @ 0x0119': 12.0,
+      'current @ 0x0101': -82.1,
+      'dc_power @ 0x0126': -3402,
+      'energy_charged @ 0x0120': 0.0,
+      'energy_charged_from_grid @ 0x0124': 0.0,
+      'energy_discharged @ 0x0122': 1.0,
+      'fault @ 0x011E': 0,
+      'max_cell_temperature @ 0x0110': 17.0,
+      'max_cell_temperature_cell @ 0x010F': 3,
+      'max_cell_temperature_pack @ 0x010E': 1,
+      'max_cell_voltage @ 0x010A': 3.338,
+      'max_cell_voltage_cell @ 0x0109': 3,
+      'max_cell_voltage_pack @ 0x0108': 2,
+      'max_charge_current @ 0x0111': 156.9,
+      'max_charge_power @ 0x012C': 6264,
+      'max_charge_voltage @ 0x0113': 43.2,
+      'max_discharge_current @ 0x0112': 156.9,
+      'max_discharge_power @ 0x012D': 6264,
+      'min_cell_temperature @ 0x010D': 15.0,
+      'min_cell_temperature_cell @ 0x010C': 4,
+      'min_cell_temperature_pack @ 0x010B': 2,
+      'min_cell_voltage @ 0x0107': 3.32,
+      'min_cell_voltage_cell @ 0x0106': 1,
+      'min_cell_voltage_pack @ 0x0105': 3,
+      'min_discharge_voltage @ 0x0114': 36.0,
+      'module_count @ 0x0118': 3,
+      'relay_status @ 0x0104': 3,
+      'soc @ 0x0102': 29.6,
+      'soh @ 0x011B': 100.0,
+      'status @ 0x0103': 257,
+      'voltage @ 0x0100': 39.9,
+      'warning @ 0x011C': 0,
+    }),
+    'dispatch': dict({
+      'active @ 0x0880': False,
+      'duration @ 0x0887': 90,
+      'mode @ 0x0885': 0,
+      'power @ 0x0881': 0,
+      'reactive_power @ 0x0883': 0,
+      'soc_target @ 0x0886': 0.0,
+    }),
+    'identity': dict({
+      '_ems_major @ 0x074B': 1,
+      '_ems_minor @ 0x074C': 1,
+      '_ems_patch @ 0x074D': 24,
+      '_ems_suffix @ 0x074F': 'CFU',
+      'firmware_arm @ 0x0645': 'V2.01.003',
+      'firmware_inverter @ 0x0640': 'V3.05.011',
+      'serial_number @ 0x0743': 'ALG0REDACTED001',
+    }),
+    'inverter': dict({
+      'ac_current @ 0x0403': 15.4,
+      'ac_power @ 0x040C': -3679,
+      'fault @ 0x043A': 0,
+      'grid_frequency @ 0x041C': 49.97,
+      'grid_voltage @ 0x0400': 230.0,
+      'temperature @ 0x0435': 29.0,
+      'work_mode @ 0x0440': 1,
+    }),
+    'settings': dict({
+      'charge_cutoff_soc @ 0x0855': 100,
+      'discharge_cutoff_soc @ 0x0850': 10,
+      'max_feed_in @ 0x0800': 100,
+    }),
+    'system': dict({
+      'fault @ 0x08D4': 0,
+    }),
+  })
+# ---
+# name: test_scan[charging_3680w][efficiency]
+  92.5
+# ---
+# name: test_scan[charging_3680w][reads]
+  list([
+    'holding 0x0640 +10',
+    'holding 0x0743 +14',
+    'holding 0x0100 +46',
+    'holding 0x0400 +65',
+    'holding 0x0880 +9',
+    'holding 0x08D4 +2',
+    'holding 0x0800 +1',
+    'holding 0x0850 +6',
+  ])
+# ---
+# name: test_scan[charging_500w][decoded]
+  dict({
+    'battery': dict({
+      'bms_version @ 0x0115': 102,
+      'capacity @ 0x0119': 12.0,
+      'current @ 0x0101': -11.6,
+      'dc_power @ 0x0126': -446,
+      'energy_charged @ 0x0120': 0.0,
+      'energy_charged_from_grid @ 0x0124': 0.0,
+      'energy_discharged @ 0x0122': 0.5,
+      'fault @ 0x011E': 0,
+      'max_cell_temperature @ 0x0110': 15.0,
+      'max_cell_temperature_cell @ 0x010F': 3,
+      'max_cell_temperature_pack @ 0x010E': 1,
+      'max_cell_voltage @ 0x010A': 3.262,
+      'max_cell_voltage_cell @ 0x0109': 2,
+      'max_cell_voltage_pack @ 0x0108': 3,
+      'max_charge_current @ 0x0111': 61.9,
+      'max_charge_power @ 0x012C': 2424,
+      'max_charge_voltage @ 0x0113': 43.2,
+      'max_discharge_current @ 0x0112': 156.9,
+      'max_discharge_power @ 0x012D': 6138,
+      'min_cell_temperature @ 0x010D': 13.0,
+      'min_cell_temperature_cell @ 0x010C': 4,
+      'min_cell_temperature_pack @ 0x010B': 3,
+      'min_cell_voltage @ 0x0107': 3.255,
+      'min_cell_voltage_cell @ 0x0106': 1,
+      'min_cell_voltage_pack @ 0x0105': 2,
+      'min_discharge_voltage @ 0x0114': 36.0,
+      'module_count @ 0x0118': 3,
+      'relay_status @ 0x0104': 3,
+      'soc @ 0x0102': 32.8,
+      'soh @ 0x011B': 100.0,
+      'status @ 0x0103': 257,
+      'voltage @ 0x0100': 39.1,
+      'warning @ 0x011C': 0,
+    }),
+    'dispatch': dict({
+      'active @ 0x0880': False,
+      'duration @ 0x0887': 90,
+      'mode @ 0x0885': 0,
+      'power @ 0x0881': 0,
+      'reactive_power @ 0x0883': 0,
+      'soc_target @ 0x0886': 0.0,
+    }),
+    'identity': dict({
+      '_ems_major @ 0x074B': 1,
+      '_ems_minor @ 0x074C': 1,
+      '_ems_patch @ 0x074D': 24,
+      '_ems_suffix @ 0x074F': 'CFU',
+      'firmware_arm @ 0x0645': 'V2.01.003',
+      'firmware_inverter @ 0x0640': 'V3.05.011',
+      'serial_number @ 0x0743': 'ALG0REDACTED001',
+    }),
+    'inverter': dict({
+      'ac_current @ 0x0403': 2.1,
+      'ac_power @ 0x040C': -499,
+      'fault @ 0x043A': 0,
+      'grid_frequency @ 0x041C': 49.98,
+      'grid_voltage @ 0x0400': 231.0,
+      'temperature @ 0x0435': 26.0,
+      'work_mode @ 0x0440': 1,
+    }),
+    'settings': dict({
+      'charge_cutoff_soc @ 0x0855': 100,
+      'discharge_cutoff_soc @ 0x0850': 10,
+      'max_feed_in @ 0x0800': 100,
+    }),
+    'system': dict({
+      'fault @ 0x08D4': 0,
+    }),
+  })
+# ---
+# name: test_scan[charging_500w][efficiency]
+  89.4
+# ---
+# name: test_scan[charging_500w][reads]
+  list([
+    'holding 0x0640 +10',
+    'holding 0x0743 +14',
+    'holding 0x0100 +46',
+    'holding 0x0400 +65',
+    'holding 0x0880 +9',
+    'holding 0x08D4 +2',
+    'holding 0x0800 +1',
+    'holding 0x0850 +6',
+  ])
+# ---
+# name: test_scan[discharging_800w_dispatch][decoded]
+  dict({
+    'battery': dict({
+      'bms_version @ 0x0115': 102,
+      'capacity @ 0x0119': 12.0,
+      'current @ 0x0101': 23.2,
+      'dc_power @ 0x0126': 857,
+      'energy_charged @ 0x0120': 0.0,
+      'energy_charged_from_grid @ 0x0124': 0.0,
+      'energy_discharged @ 0x0122': 0.9,
+      'fault @ 0x011E': 0,
+      'max_cell_temperature @ 0x0110': 16.0,
+      'max_cell_temperature_cell @ 0x010F': 3,
+      'max_cell_temperature_pack @ 0x010E': 1,
+      'max_cell_voltage @ 0x010A': 3.234,
+      'max_cell_voltage_cell @ 0x0109': 1,
+      'max_cell_voltage_pack @ 0x0108': 1,
+      'max_charge_current @ 0x0111': 61.8,
+      'max_charge_power @ 0x012C': 2399,
+      'max_charge_voltage @ 0x0113': 43.2,
+      'max_discharge_current @ 0x0112': 156.7,
+      'max_discharge_power @ 0x012D': 6075,
+      'min_cell_temperature @ 0x010D': 14.0,
+      'min_cell_temperature_cell @ 0x010C': 4,
+      'min_cell_temperature_pack @ 0x010B': 3,
+      'min_cell_voltage @ 0x0107': 3.225,
+      'min_cell_voltage_cell @ 0x0106': 1,
+      'min_cell_voltage_pack @ 0x0105': 2,
+      'min_discharge_voltage @ 0x0114': 36.0,
+      'module_count @ 0x0118': 3,
+      'relay_status @ 0x0104': 3,
+      'soc @ 0x0102': 30.4,
+      'soh @ 0x011B': 100.0,
+      'status @ 0x0103': 257,
+      'voltage @ 0x0100': 38.7,
+      'warning @ 0x011C': 0,
+    }),
+    'dispatch': dict({
+      'active @ 0x0880': True,
+      'duration @ 0x0887': 180,
+      'mode @ 0x0885': 2,
+      'power @ 0x0881': 798,
+      'reactive_power @ 0x0883': None,
+      'soc_target @ 0x0886': 10.0,
+    }),
+    'identity': dict({
+      '_ems_major @ 0x074B': 1,
+      '_ems_minor @ 0x074C': 1,
+      '_ems_patch @ 0x074D': 24,
+      '_ems_suffix @ 0x074F': 'CFU',
+      'firmware_arm @ 0x0645': 'V2.01.003',
+      'firmware_inverter @ 0x0640': 'V3.05.011',
+      'serial_number @ 0x0743': 'ALG0REDACTED001',
+    }),
+    'inverter': dict({
+      'ac_current @ 0x0403': 3.3,
+      'ac_power @ 0x040C': 797,
+      'fault @ 0x043A': 0,
+      'grid_frequency @ 0x041C': 49.98,
+      'grid_voltage @ 0x0400': 238.0,
+      'temperature @ 0x0435': 27.0,
+      'work_mode @ 0x0440': 1,
+    }),
+    'settings': dict({
+      'charge_cutoff_soc @ 0x0855': 100,
+      'discharge_cutoff_soc @ 0x0850': 10,
+      'max_feed_in @ 0x0800': 100,
+    }),
+    'system': dict({
+      'fault @ 0x08D4': 0,
+    }),
+  })
+# ---
+# name: test_scan[discharging_800w_dispatch][efficiency]
+  93.0
+# ---
+# name: test_scan[discharging_800w_dispatch][reads]
+  list([
+    'holding 0x0640 +10',
+    'holding 0x0743 +14',
+    'holding 0x0100 +46',
+    'holding 0x0400 +65',
+    'holding 0x0880 +9',
+    'holding 0x08D4 +2',
+    'holding 0x0800 +1',
+    'holding 0x0850 +6',
+  ])
+# ---

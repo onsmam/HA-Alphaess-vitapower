@@ -1,0 +1,157 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Apparaat is al geconfigureerd",
+      "reconfigure_successful": "Herconfiguratie geslaagd",
+      "unique_id_mismatch": "Herconfigureer dezelfde batterij die je oorspronkelijk hebt ingesteld."
+    },
+    "error": {
+      "cannot_connect": "Verbinden mislukt: {error}",
+      "not_a_vitapower": "Het apparaat antwoordde, maar gaf geen VitaPower-serienummer."
+    },
+    "step": {
+      "reconfigure": {
+        "data": {
+          "host": "Host",
+          "port": "Poort",
+          "unit_id": "Modbus unit-ID"
+        },
+        "data_description": {
+          "host": "Hostnaam of IP-adres van de LAN-poort van de batterij. Modbus TCP werkt niet via wifi.",
+          "port": "De Modbus TCP-poort om mee te verbinden.",
+          "unit_id": "Het Modbus unit-ID van de batterij. Een VitaPower antwoordt op 85."
+        },
+        "description": "Pas aan waar deze batterij bereikt wordt, bijvoorbeeld na een nieuw IP-adres. Het moet dezelfde batterij blijven: het serienummer dat antwoordt wordt vergeleken met dat van deze configuratie."
+      },
+      "user": {
+        "data": {
+          "host": "Host",
+          "port": "Poort",
+          "unit_id": "Modbus unit-ID"
+        },
+        "data_description": {
+          "host": "Hostnaam of IP-adres van de LAN-poort van de batterij. Modbus TCP werkt niet via wifi.",
+          "port": "De Modbus TCP-poort om mee te verbinden.",
+          "unit_id": "Het Modbus unit-ID van de batterij. Een VitaPower antwoordt op 85."
+        },
+        "description": "Stel een AlphaESS VitaPower in via zijn LAN-poort. De batterij accepteert maar één Modbus-client: stop eerst alle andere software die hem uitleest (zoals een YAML `modbus:`-hub)."
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "battery_fault": {
+        "name": "Batterijfout"
+      },
+      "battery_warning": {
+        "name": "Batterijwaarschuwing"
+      },
+      "dispatch_active": {
+        "name": "Dispatch op afstand"
+      },
+      "inverter_fault": {
+        "name": "Omvormerfout"
+      },
+      "system_fault": {
+        "name": "Systeemfout"
+      }
+    },
+    "sensor": {
+      "ac_current": {
+        "name": "AC-stroom"
+      },
+      "ac_power": {
+        "name": "AC-vermogen"
+      },
+      "battery_current": {
+        "name": "Batterijstroom"
+      },
+      "battery_power": {
+        "name": "Batterijvermogen"
+      },
+      "battery_voltage": {
+        "name": "Batterijspanning"
+      },
+      "capacity": {
+        "name": "Capaciteit"
+      },
+      "charge_cutoff_soc": {
+        "name": "Laadgrens SOC"
+      },
+      "discharge_cutoff_soc": {
+        "name": "Ontlaadgrens SOC"
+      },
+      "dispatch_duration": {
+        "name": "Dispatch-duur"
+      },
+      "dispatch_power": {
+        "name": "Dispatch-vermogen"
+      },
+      "dispatch_soc_target": {
+        "name": "Dispatch SOC-doel"
+      },
+      "efficiency": {
+        "name": "Rendement"
+      },
+      "energy_charged": {
+        "name": "Energie geladen"
+      },
+      "energy_charged_from_grid": {
+        "name": "Energie geladen van net"
+      },
+      "energy_discharged": {
+        "name": "Energie ontladen"
+      },
+      "grid_frequency": {
+        "name": "Netfrequentie"
+      },
+      "grid_voltage": {
+        "name": "Netspanning"
+      },
+      "inverter_temperature": {
+        "name": "Omvormertemperatuur"
+      },
+      "max_cell_temperature": {
+        "name": "Hoogste celtemperatuur"
+      },
+      "max_cell_voltage": {
+        "name": "Hoogste celspanning"
+      },
+      "max_charge_current": {
+        "name": "Maximale laadstroom"
+      },
+      "max_charge_power": {
+        "name": "Maximaal laadvermogen"
+      },
+      "max_discharge_current": {
+        "name": "Maximale ontlaadstroom"
+      },
+      "max_discharge_power": {
+        "name": "Maximaal ontlaadvermogen"
+      },
+      "max_feed_in": {
+        "name": "Maximale teruglevering"
+      },
+      "min_cell_temperature": {
+        "name": "Laagste celtemperatuur"
+      },
+      "min_cell_voltage": {
+        "name": "Laagste celspanning"
+      },
+      "state_of_health": {
+        "name": "Gezondheid (SOH)"
+      }
+    }
+  },
+  "exceptions": {
+    "modbus_error": {
+      "message": "Fout bij communicatie met de batterij."
+    },
+    "no_component_answered": {
+      "message": "Geen enkel onderdeel antwoordde."
+    },
+    "wrong_device": {
+      "message": "Op dit adres antwoordt nu een andere batterij."
+    }
+  }
+}

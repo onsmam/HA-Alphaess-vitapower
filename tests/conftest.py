@@ -1,21 +1,83 @@
-"""Fixtures: a VitaPower answering with a recorded scan, over the real
-`homeassistant.components.modbus` connection sharing."""
+"""Fixtures for the AlphaESS VitaPower integration tests."""
 
 from collections.abc import Generator
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from modbus_connection.mock import MockModbusConnection, MockModbusUnit
+from modbus_connection.mock import MockModbusConnection
 import pytest
-
-from custom_components.alphaess_vitapower.const import CONF_UNIT_ID, DOMAIN
-from homeassistant.const import CONF_HOST, CONF_PORT
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.syrupy import HomeAssistantSnapshotExtension
+from syrupy.assertion import SnapshotAssertion
 
-from .scans import DISCHARGE_800W, load_scan
+from custom_components.alphaess_modbus_vitapower.const import DOMAIN
+from homeassistant.core import HomeAssistant
 
-HOST = "192.168.1.28"
-SERIAL = "ALG0REDACTED001"
-USER_INPUT = {CONF_HOST: HOST, CONF_PORT: 502, CONF_UNIT_ID: 85}
+from . import MOCK_SERIAL, MOCK_UNIT_ID, MOCK_USER_INPUT, seed_vitapower
+
+
+@pytest.fixture(autouse=True)
+def no_connect_delay() -> Generator[None]:
+    """Skip the pause the library asks for after the link opens."""
+    with patch(
+        "custom_components.alphaess_modbus_vitapower.vendor.alphaess_modbus_vitapower.device.CONNECT_DELAY",
+        0,
+    ):
+        yield
+
+
+@pytest.fixture
+def mock_setup_entry() -> Generator[AsyncMock]:
+    """Override async_setup_entry."""
+    with patch(
+        "custom_components.alphaess_modbus_vitapower.async_setup_entry",
+        new_callable=AsyncMock,
+        return_value=None,
+    ) as mock_setup_entry:
+        yield mock_setup_entry
+
+
+@pytest.fixture
+def mock_connection() -> MockModbusConnection:
+    """A fake Modbus TCP connection seeded as a discharging VitaPower."""
+    connection = MockModbusConnection()
+    seed_vitapower(connection.for_unit(MOCK_UNIT_ID))
+    return connection
+
+
+@pytest.fixture
+def mock_config_entry() -> MockConfigEntry:
+    """Mock an AlphaESS VitaPower config entry."""
+    return MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=MOCK_SERIAL,
+        data=MOCK_USER_INPUT,
+        title="VitaPower",
+    )
+
+
+@pytest.fixture
+def mock_get_unit(mock_connection: MockModbusConnection) -> Generator[MagicMock]:
+    """Hand out units on the mock connection when the entry sets up."""
+    with patch(
+        "custom_components.alphaess_modbus_vitapower.async_get_unit",
+        side_effect=lambda hass, entry, params, unit_id: mock_connection.for_unit(
+            unit_id
+        ),
+    ) as mock_get_unit:
+        yield mock_get_unit
+
+
+@pytest.fixture
+async def init_integration(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    mock_get_unit: MagicMock,
+) -> MockConfigEntry:
+    """Set up the AlphaESS VitaPower integration for testing."""
+    mock_config_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(mock_config_entry.entry_id)
+    await hass.async_block_till_done(wait_background_tasks=True)
+    return mock_config_entry
 
 
 @pytest.fixture(autouse=True)
@@ -23,42 +85,17 @@ def auto_enable_custom_integrations(enable_custom_integrations: None) -> None:
     """Load custom_components/ in every test."""
 
 
-class ReopenableMockConnection(MockModbusConnection):
-    """Stands in for every connection opened to the device.
-
-    Home Assistant builds a new connection after the last holder closed the
-    previous one; here that is the same object, so closing only drops the link.
-    """
-
-    async def close(self) -> None:
-        await self.disconnect()
+@pytest.fixture
+def snapshot(snapshot: SnapshotAssertion) -> SnapshotAssertion:
+    """Serialize registry entries and states the way Home Assistant does."""
+    return snapshot.use_extension(HomeAssistantSnapshotExtension)
 
 
 @pytest.fixture
-def mock_connection() -> Generator[MockModbusConnection]:
-    """Every link Home Assistant's Modbus integration opens is this one."""
-    connection = ReopenableMockConnection()
+def entity_registry_enabled_by_default() -> Generator[None]:
+    """Enable every entity in the registry."""
     with patch(
-        "homeassistant.components.modbus.connection.ModbusConnection",
-        return_value=connection,
+        "homeassistant.helpers.entity.Entity.entity_registry_enabled_default",
+        return_value=True,
     ):
-        yield connection
-
-
-@pytest.fixture
-def mock_unit(mock_connection: MockModbusConnection) -> MockModbusUnit:
-    """Unit 85, answering with the 18:12 discharge scan."""
-    unit = mock_connection.for_unit(85)
-    unit.holding.update(load_scan(DISCHARGE_800W))
-    return unit
-
-
-@pytest.fixture
-def mock_config_entry() -> MockConfigEntry:
-    """A configured VitaPower."""
-    return MockConfigEntry(
-        domain=DOMAIN,
-        title="AlphaESS VitaPower",
-        data=USER_INPUT,
-        unique_id=SERIAL,
-    )
+        yield

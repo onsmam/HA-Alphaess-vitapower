@@ -1,152 +1,104 @@
-# AlphaESS VitaPower 3600 AC – Home Assistant (Modbus TCP)
+# AlphaESS VitaPower for Home Assistant
 
-Custom integratie voor de **AlphaESS VitaPower 3600 AC** via Modbus TCP, gebouwd op de
-gedeelde Modbus-verbindingen die Home Assistant sinds **2026.10** aanbiedt
-(`homeassistant.components.modbus.async_get_unit`, dezelfde basis als de core-integraties
-`kaco_modbus` en `bluetti_modbus`).
+Read an **AlphaESS VitaPower 3600 AC** battery over Modbus TCP, on Home Assistant
+**2026.10 or newer**, using the shared Modbus connections Home Assistant's
+Modbus integration hands out (`homeassistant.components.modbus.async_get_unit`).
 
-- Config flow (UI), geen YAML.
-- Leest alleen: v0.1 schrijft **niets** naar de batterij (zie [Roadmap](#roadmap)).
-- Registermap en quirks: [`docs/VITAPOWER_MODBUS.md`](docs/VITAPOWER_MODBUS.md).
-- Getest tegen de echte registerscans in [`docs/scans`](docs/scans) (serienummer daarin vervangen door `ALG0REDACTED001`).
+> [!WARNING]
+> Untested on hardware so far: everything has run against recorded register
+> scans of a real VitaPower only. Read-only — nothing is written to the battery.
 
-## Vereisten
+This repository holds three things:
 
-| | |
-|---|---|
-| Home Assistant | 2026.10.0 of nieuwer (ontwikkeld en getest met 2026.10.4 / bronnen van 2026.11.1) |
-| Verbinding | LAN-poort van de VitaPower (wifi geeft geen poort 502) |
-| Unit ID | 85 |
-| Overige Modbus-clients | **Geen.** De VitaPower accepteert maar één TCP-client tegelijk. |
+| Folder | What | Modelled on |
+| :--- | :--- | :--- |
+| [`library/`](library) | `alphaess-modbus-vitapower`, the standalone device library on [modbus-connection](https://github.com/home-assistant-libs/modbus-connection) | [darkrain-nl/sofar-modbus](https://github.com/darkrain-nl/sofar-modbus) |
+| [`core/`](core) | the integration as it would be contributed to Home Assistant Core | [`homeassistant/components/sofar`](https://github.com/home-assistant/core/tree/dev/homeassistant/components/sofar) |
+| [`custom_components/`](custom_components) | the same integration for HACS, with the library vendored | [ludeeus/integration_blueprint](https://github.com/ludeeus/integration_blueprint) |
 
-## Installatie (HACS)
+`custom_components/` and `tests/` are generated from `core/` and `library/` by
+[`scripts/sync_custom.py`](scripts/sync_custom.py); CI fails when they drift.
 
-1. HACS → ⋮ → **Custom repositories** → `https://github.com/onsmam/HA-Alphaess-vitapower`, type **Integration**.
-2. Installeer **AlphaESS VitaPower (Modbus)** en herstart Home Assistant.
-3. **Instellingen → Apparaten & diensten → Integratie toevoegen → AlphaESS VitaPower**.
-4. Host `192.168.1.28`, poort `502`, unit ID `85`.
+## Installation (HACS)
 
-Het serienummer (0x0743) wordt de unique ID. Verandert het IP-adres: integratie → ⋮ → **Opnieuw configureren**.
+1. **Remove any other Modbus connection to the battery first** — such as a YAML
+   `modbus:` hub — and restart. The VitaPower accepts a single Modbus TCP
+   client, and a YAML hub opens a link of its own rather than sharing one.
+2. HACS → ⋮ → **Custom repositories** → `https://github.com/onsmam/HA-Alphaess-vitapower`, type **Integration**.
+3. Download **AlphaESS VitaPower (Modbus)** and restart Home Assistant.
+4. **Settings → Devices & services → Add integration → AlphaESS VitaPower**:
+   the IP address of the battery's **LAN port** (Wi-Fi serves no Modbus), port
+   `502`, unit ID `85`.
 
-## Overstappen van het YAML-package
-
-De YAML-hub (`modbus:` in `packages/vitapower.yaml`) opent een **eigen** TCP-verbinding; die wordt
-niet gedeeld met deze integratie. Omdat de VitaPower maar één client toestaat, moeten ze niet
-naast elkaar draaien.
-
-1. Verwijder `packages/vitapower.yaml` (of zet het `modbus:`- en `template:`-blok uit) en herstart.
-2. Voeg de integratie toe (zie boven).
-3. Pas energiedashboard en DAO aan naar de nieuwe entity-IDs (tabel hieronder).
-4. Ruim de oude entities op (Instellingen → Entiteiten, filter op `vitapower`, status *niet beschikbaar*).
-
-| Oud (YAML-package) | Nieuw |
-|---|---|
-| `sensor.vitapower_soc` | `sensor.vitapower_state_of_charge` |
-| `sensor.vitapower_ac_vermogen` | `sensor.vitapower_ac_power` |
-| `sensor.vitapower_dc_vermogen` | `sensor.vitapower_dc_battery_power` |
-| `sensor.vitapower_geladen` | `sensor.vitapower_energy_charged` |
-| `sensor.vitapower_ontladen` | `sensor.vitapower_energy_discharged` |
-| `sensor.vitapower_geladen_van_net` | `sensor.vitapower_energy_charged_from_grid` |
-| `sensor.vitapower_rendement` (template) | `sensor.vitapower_conversion_efficiency` |
-| `sensor.vitapower_batterijspanning` | `sensor.vitapower_battery_voltage` |
-| `sensor.vitapower_batterijstroom` | `sensor.vitapower_battery_current` |
-| `sensor.vitapower_min_celspanning` / `max_celspanning` | `sensor.vitapower_lowest_cell_voltage` / `highest_cell_voltage` |
-| `sensor.vitapower_min_celtemperatuur` / `max_celtemperatuur` | `sensor.vitapower_lowest_cell_temperature` / `highest_cell_temperature` |
-| `sensor.vitapower_soh` | `sensor.vitapower_state_of_health` |
-| `sensor.vitapower_max_laadvermogen` / `max_ontlaadvermogen` | `sensor.vitapower_max_charge_power` / `max_discharge_power` |
-| `sensor.vitapower_netspanning` | `sensor.vitapower_grid_voltage` |
-| `sensor.vitapower_ac_stroom` | `sensor.vitapower_ac_current` |
-| `sensor.vitapower_netfrequentie` | `sensor.vitapower_grid_frequency` |
-| `sensor.vitapower_omvormertemperatuur` | `sensor.vitapower_inverter_temperature` |
-| `sensor.vitapower_dispatch_actief` | `binary_sensor.vitapower_cloud_dispatch` |
-| `sensor.vitapower_dispatch_vermogen` | `sensor.vitapower_dispatch_power` |
-| `sensor.vitapower_ontlaadgrens_soc` / `laadgrens_soc` | `sensor.vitapower_discharge_cut_off_soc` / `charge_cut_off_soc` |
-| `sensor.vitapower_batterij_waarschuwing` / `batterij_fout` | `binary_sensor.vitapower_battery_warning` / `battery_fault` |
-| `sensor.vitapower_omvormer_fout` / `systeem_fout` | `binary_sensor.vitapower_inverter_fault` / `system_fault` |
-| `sensor.vitapower_firmware_omvormer` / `firmware_arm` | `sensor.vitapower_inverter_firmware` / `arm_firmware` |
-
-Entity-IDs zijn Engels (HA genereert ze uit de Engelse naam); de weergavenamen zijn Nederlands
-als je HA op Nederlands staat. De oude IDs zijn afgeleid van de namen in het YAML-package; controleer ze in je eigen installatie.
-
-**Energiedashboard:** batterij in `sensor.vitapower_energy_charged`, uit `sensor.vitapower_energy_discharged`,
-vermogen `sensor.vitapower_ac_power` (+ = ontladen, − = laden).
-
-**DAO** (alleen de entity-velden wijzigen):
-
-```json
-"entity actual level": "sensor.vitapower_state_of_charge",
-"upper limit": "sensor.vitapower_charge_cut_off_soc",
-"lower limit": "sensor.vitapower_discharge_cut_off_soc",
-```
+The battery's serial number becomes the entry's unique ID; after an IP change use
+**Reconfigure** on the integration.
 
 ## Entities
 
-Teken vermogen/stroom: **+ = ontladen, − = laden**.
+Power and current are **+ discharging, − charging**, as the energy dashboard
+expects. Readings refresh every 5 s, the configured limits every 5 minutes.
 
-| Groep | Entities | Interval |
-|---|---|---|
-| Vermogen | AC-vermogen (0x040C), DC-batterijvermogen (0x0126), rendement (berekend) | 5 s |
-| Batterij | SOC, spanning, stroom | 30 s |
-| Net | netspanning, AC-stroom | 30 s |
-| Dispatch | cloud-dispatch actief, vermogen, SOC-doel, modus, duur | 30 s |
-| Cellen | laagste/hoogste celspanning en -temperatuur (attributen `pack`, `cell`) | 60 s |
-| Tellers | energie geladen / ontladen / geladen van net (`total_increasing`) | 60 s |
-| Limieten | max laad-/ontlaadvermogen en -stroom (BMS, dynamisch) | 60 s |
-| Omvormer | netfrequentie, omvormertemperatuur | 60 s |
-| Storingen | batterijwaarschuwing, batterijfout, omvormerfout, systeemfout (binary, attribuut `code`) | 60 s |
-| Instellingen | ontlaadgrens SOC, laadgrens SOC, max teruglevering | 300 s |
-| Identiteit | firmware omvormer/ARM, BMS-versie; EMS-versie en serienummer op het apparaat | start + 24 u |
+| | Entities |
+| :--- | :--- |
+| Battery | state of charge, voltage, current, battery (DC) power, state of health, lowest/highest cell voltage and temperature, BMS charge/discharge power limits, capacity |
+| Energy | energy charged, discharged, charged from grid (`total_increasing`; the battery updates them in batches, minutes behind) |
+| Inverter | AC power, grid voltage, AC current, grid frequency, inverter temperature, conversion efficiency (worked out; unknown below 100 W) |
+| Dispatch | remote dispatch running (the vendor's cloud controls the battery through it), dispatch power, state-of-charge target, duration |
+| Settings | discharge and charge cut-off state of charge, maximum feed-in |
+| Faults | battery warning, battery fault, inverter fault, system fault (on for any bit; the codes are in the diagnostics) |
 
-Standaard uitgeschakeld (betekenis nog onbekend of zelden nodig): batterijstatus (0x0103),
-relaisstatus (0x0104), werkmodus omvormer (0x0440), max laadspanning, min ontlaadspanning.
+For the energy dashboard: battery in `sensor.vitapower_energy_charged`, out
+`sensor.vitapower_energy_discharged`, power `sensor.vitapower_ac_power`.
 
-### Hoe er gelezen wordt
+## Development
 
-- Eén coördinator tikt elke 5 s en leest alleen de blokken die aan de beurt zijn: 2 requests per 5 s, de rest verspreid.
-- Nooit gelezen: 0x0441–0x0449 (layout verschuift), 0x0453–0x0454 en 0x072C–0x073F (exception), 0x0808–0x0810 (netwerk). Dit wordt bij het laden van de integratie gecontroleerd.
-- Weigert de firmware een blok toch (illegal address), dan wordt alleen dat blok overgeslagen en worden die entities *onbekend*; de rest blijft werken.
-- Verbindingsinstellingen overgenomen van je werkende YAML-hub: 1 s wachten na verbinden, 30 ms tussen berichten.
-- Geeft een ander apparaat (ander serienummer) antwoord op het adres, dan worden de entities niet gevoed.
-
-### Diagnostiek
-
-Integratie → ⋮ → **Diagnostiek downloaden** geeft de gedecodeerde waarden én de ruwe registercache
-(zelfde adresnotatie als de scans). Serienummer en host worden weggelaten.
-
-## Roadmap
-
-1. **Bediening** (zodra de batterij gerepareerd is en getest kan worden):
-   - number-entities voor ontlaadgrens (0x0850) en laadgrens (0x0855);
-   - dispatch als één FC16-write van 9 registers vanaf 0x0880, korte duur + keep-alive, en stop;
-   - write-allowlist; 0x0808–0x0810 en 0x1000–0x1024 nooit schrijven.
-   Eerst uitzoeken welke app-modus de cloud-dispatch uitschakelt, anders overschrijven HA en de cloud elkaar elke ~180 s.
-2. Open punten uit [`docs/VITAPOWER_MODBUS.md` §6](docs/VITAPOWER_MODBUS.md#6-open-punten): dag- of totaalteller, 0x0120 vs 0x0124, betekenis van 0x0103/0x0104/0x0440.
-
-## Scannen
-
-Zie [`tools/modbus_scan.py`](tools/modbus_scan.py) en §9 van het document. Omdat de VitaPower maar
-één client toestaat: **integratie eerst uitschakelen** (⋮ → Uitschakelen), scannen, weer inschakelen.
-Serienummer uit een scan halen voordat je hem deelt:
+The custom integration follows the blueprint:
 
 ```bash
-python3 tools/redact_scan.py scan_20261110_1812.csv
-```
-
-## Ontwikkeling
-
-```bash
-python3.14 -m venv .venv
+scripts/setup
 ```
 
 ```bash
-.venv/bin/pip install -r requirements_test.txt
+scripts/develop
 ```
 
 ```bash
-.venv/bin/pytest
+scripts/lint
 ```
 
-`custom_components/alphaess_vitapower/registers.py` bevat de volledige registermap zonder HA-afhankelijkheden.
-Vertalingen (en/nl) worden gegenereerd met `python3 tools/gen_translations.py`.
+Change the integration in `core/` and the device in `library/`, then regenerate
+`custom_components/` and `tests/` (needs `ruff` and a Home Assistant install for
+the strings `[%key:…]` references resolve against):
 
-[`examples/vitapower_yaml_package.yaml`](examples/vitapower_yaml_package.yaml) is het oude YAML-package, ter referentie.
+```bash
+python3 scripts/sync_custom.py
+```
+
+Run the custom integration's tests, and the library's:
+
+```bash
+pip install -r requirements_test.txt && pytest
+```
+
+```bash
+cd library && uv sync && uv run pytest
+```
+
+[`docs/VITAPOWER_MODBUS.md`](docs/VITAPOWER_MODBUS.md) has the register map and
+how it was verified; [`docs/scans`](docs/scans) the scans, with the serial
+number replaced ([`tools/redact_scan.py`](tools/redact_scan.py)).
+[`tools/modbus_scan.py`](tools/modbus_scan.py) is the read-only scanner they were
+taken with, and [`examples/vitapower_yaml_package.yaml`](examples/vitapower_yaml_package.yaml)
+the YAML package this replaces.
+
+## Releases
+
+The HACS integration is released with bare version tags (`0.2.0`), the version
+kept in [`custom_components/VERSION`](custom_components/VERSION); the library
+with `library-` tags, see [`library/RELEASING.md`](library/RELEASING.md).
+
+## Nederlands — snel installeren
+
+1. Verwijder eerst je YAML `modbus:`-package voor de VitaPower en herstart (de batterij accepteert maar één client).
+2. HACS → ⋮ → **Aangepaste repositories** → deze repo, type **Integratie** → downloaden → herstarten.
+3. **Instellingen → Apparaten & diensten → Integratie toevoegen → AlphaESS VitaPower**: IP van de LAN-poort, poort 502, unit-ID 85.

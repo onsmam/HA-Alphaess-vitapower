@@ -1,6 +1,9 @@
 {
   "domain": "alphaess_modbus_vitapower",
   "name": "AlphaESS VitaPower",
+  "categories": [
+    "energy.solar_batteries"
+  ],
   "codeowners": [
     "@onsmam"
   ],

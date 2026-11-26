@@ -4,7 +4,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import timedelta
 import logging
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from alphaess_modbus_vitapower import UpdateReport, VitaPower
 from modbus_connection import ModbusError
@@ -15,6 +15,9 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import ATTR_MANUFACTURER, DEFAULT_NAME, DOMAIN, MODEL
+
+if TYPE_CHECKING:
+    from .control import VitaPowerController
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -108,6 +111,7 @@ class VitaPowerRuntimeData:
 
     readings: VitaPowerDataUpdateCoordinator
     settings: VitaPowerDataUpdateCoordinator
+    controller: VitaPowerController
 
     def coordinator_for(self, component: str) -> VitaPowerDataUpdateCoordinator:
         """Which coordinator owns a given component's data."""

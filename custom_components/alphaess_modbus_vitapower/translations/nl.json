@@ -56,6 +56,21 @@
         "name": "Systeemfout"
       }
     },
+    "number": {
+      "power_setpoint": {
+        "name": "Vermogen setpoint"
+      }
+    },
+    "select": {
+      "control_mode": {
+        "name": "Sturing",
+        "state": {
+          "on": "Aan: setpoint volgen",
+          "off": "Uit: stilhouden op 0 W",
+          "auto": "Batterij zelf"
+        }
+      }
+    },
     "sensor": {
       "ac_current": {
         "name": "AC-stroom"
@@ -149,6 +164,9 @@
     },
     "no_component_answered": {
       "message": "Geen enkel onderdeel antwoordde."
+    },
+    "write_failed": {
+      "message": "De batterij nam het commando niet aan: {error}"
     },
     "wrong_device": {
       "message": "Op dit adres antwoordt nu een andere batterij."

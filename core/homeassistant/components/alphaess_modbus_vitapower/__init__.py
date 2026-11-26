@@ -1,6 +1,7 @@
 """Integrate AlphaESS VitaPower batteries into Home Assistant."""
 
 from datetime import timedelta
+import logging
 
 from alphaess_modbus_vitapower import VitaPower
 from modbus_connection import ModbusTcpParams
@@ -8,15 +9,24 @@ from modbus_connection import ModbusTcpParams
 from homeassistant.components.modbus import async_get_unit
 from homeassistant.const import CONF_HOST, CONF_PORT, Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
 from .const import CONF_UNIT_ID, SCAN_INTERVAL, SETTINGS_SCAN_INTERVAL
+from .control import VitaPowerController
 from .coordinator import (
     VitaPowerConfigEntry,
     VitaPowerDataUpdateCoordinator,
     VitaPowerRuntimeData,
 )
 
-PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
+PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,
+    Platform.NUMBER,
+    Platform.SELECT,
+    Platform.SENSOR,
+]
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: VitaPowerConfigEntry) -> None:
@@ -50,9 +60,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: VitaPowerConfigEntry) ->
     )
     await readings.async_config_entry_first_refresh()
     await settings.async_config_entry_first_refresh()
-    entry.runtime_data = VitaPowerRuntimeData(readings, settings)
+    controller = VitaPowerController(hass, entry, readings)
+    entry.runtime_data = VitaPowerRuntimeData(readings, settings, controller)
 
+    # The mode and setpoint entities restore their last state while set up.
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    controller.async_start()
+    try:
+        await controller.async_apply()
+    except HomeAssistantError as err:
+        _LOGGER.warning("%s: could not resume the dispatch: %s", entry.title, err)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: VitaPowerConfigEntry) -> None:

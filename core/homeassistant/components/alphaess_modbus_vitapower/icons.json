@@ -8,6 +8,21 @@
         }
       }
     },
+    "number": {
+      "power_setpoint": {
+        "default": "mdi:battery-sync-outline"
+      }
+    },
+    "select": {
+      "control_mode": {
+        "default": "mdi:remote",
+        "state": {
+          "on": "mdi:battery-sync",
+          "off": "mdi:battery-lock",
+          "auto": "mdi:battery-outline"
+        }
+      }
+    },
     "sensor": {
       "charge_cutoff_soc": {
         "default": "mdi:battery-arrow-up-outline"

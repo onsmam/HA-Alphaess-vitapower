@@ -68,8 +68,8 @@ _RETURN_BOOL = (
     ),
     (
         "__init__.py",
-        "    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)\n",
-        "    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)\n"
+        '        _LOGGER.warning("%s: could not resume the dispatch: %s", entry.title, err)\n',
+        '        _LOGGER.warning("%s: could not resume the dispatch: %s", entry.title, err)\n'
         "    return True\n",
     ),
     (

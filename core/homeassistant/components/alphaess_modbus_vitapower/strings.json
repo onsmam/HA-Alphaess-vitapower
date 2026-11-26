@@ -56,6 +56,21 @@
         "name": "System fault"
       }
     },
+    "number": {
+      "power_setpoint": {
+        "name": "Power setpoint"
+      }
+    },
+    "select": {
+      "control_mode": {
+        "name": "Control mode",
+        "state": {
+          "on": "On: follow the power setpoint",
+          "off": "Off: hold idle at 0 W",
+          "auto": "Battery's own mode"
+        }
+      }
+    },
     "sensor": {
       "ac_current": {
         "name": "AC current"
@@ -149,6 +164,9 @@
     },
     "no_component_answered": {
       "message": "No component answered."
+    },
+    "write_failed": {
+      "message": "The battery did not take the command: {error}"
     },
     "wrong_device": {
       "message": "A different battery now answers at this address."

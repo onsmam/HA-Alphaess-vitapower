@@ -11,7 +11,7 @@ from modbus_connection import ModbusError
 from modbus_connection.model import Device, Raw
 
 from .battery import Battery
-from .dispatch import Dispatch
+from .dispatch import DISPATCH_ADDRESS, STOP_REGISTERS, Dispatch, DispatchCommand
 from .identity import Identity
 from .inverter import Inverter, System
 from .model import UpdateReport
@@ -30,8 +30,9 @@ DEFAULT_UNIT_ID: Final = 85
 CONNECT_DELAY: Final = 1.0
 MESSAGE_SPACING: Final = 0.03
 
-# Below this, on either side, the AC/DC ratio is mostly standby consumption.
-EFFICIENCY_MIN_POWER: Final = 100
+# Below this, on either side, the AC/DC ratio is mostly standby consumption:
+# at 200 W a VitaPower read 76 % and 99.5 %, at 300 W a plausible 89.7 %.
+EFFICIENCY_MIN_POWER: Final = 300
 
 _IDENTITY_ATTEMPTS = 3
 
@@ -71,6 +72,9 @@ class VitaPower(Device):
         self.settings = Settings(unit)
         self._setup_lock = asyncio.Lock()
         self._identity_pending = False
+        self._write_lock = asyncio.Lock()
+        self.dispatch_command: DispatchCommand | None = None
+        """The command this object last wrote; ``None`` after a stop."""
 
     @classmethod
     async def async_detect(cls, unit: ModbusUnit) -> Self:
@@ -179,6 +183,43 @@ class VitaPower(Device):
     async def async_update(self) -> UpdateReport:
         """Refresh readings and settings together in one report."""
         return await self.async_poll((*READING_COMPONENTS, *SETTING_COMPONENTS))
+
+    async def async_dispatch(self, command: DispatchCommand) -> None:
+        """Write ``command`` to the dispatch block, in one FC16 request.
+
+        Only 0x0880-0x0889 is written. Writing again before the duration ends
+        replaces the running command and restarts its duration.
+        """
+        async with self._write_lock:
+            await self.modbus_unit.write_registers(
+                DISPATCH_ADDRESS, list(command.registers())
+            )
+            self.dispatch_command = command
+        _LOGGER.debug("VitaPower %s: dispatch %s", self.serial_number, command)
+
+    async def async_stop_dispatch(self) -> None:
+        """End any dispatch now; the battery goes back to its own mode."""
+        async with self._write_lock:
+            await self.modbus_unit.write_registers(
+                DISPATCH_ADDRESS, list(STOP_REGISTERS)
+            )
+            self.dispatch_command = None
+        _LOGGER.debug("VitaPower %s: dispatch stopped", self.serial_number)
+
+    @property
+    def dispatch_overridden(self) -> bool:
+        """Whether something else replaced the command this object wrote.
+
+        True when the last readings poll found the dispatch block running a
+        different command, such as the vendor's cloud dispatching. False while
+        no command was written, after the battery ended it itself, and before
+        the block has been read.
+        """
+        command = self.dispatch_command
+        dispatch = self.dispatch
+        if command is None or dispatch.active is not True:
+            return False
+        return not command.runs_on(dispatch)
 
     async def async_read_raw(
         self, names: Iterable[str] | None = None, *, redact_serial: bool = False

@@ -27,6 +27,8 @@ Gebruik (HA-integratie / YAML modbus-hub eerst uitzetten):
     python3 vitapower_dispatch_test.py --host 192.168.1.151 --discharge   # ontladen
     python3 vitapower_dispatch_test.py --power 3680 --seconds 300
         # 5 minuten laden met 3680 W; valt de batterij daarna zelf terug?
+    python3 vitapower_dispatch_test.py --power 0 --seconds 120
+        # houdt 0 W de batterij stil (ook als ze uit zichzelf ontlaadt)?
     python3 vitapower_dispatch_test.py --power 3680 --seconds 300 --auto-target
         # doel net onder wat haalbaar is: stopt de batterij zelf op het doel?
 """
@@ -152,8 +154,11 @@ def main():
     p.add_argument("--log", default=f"dispatch_test_{dt.datetime.now():%Y%m%d_%H%M%S}.csv")
     args = p.parse_args()
 
-    if not 50 <= args.power <= MAX_POWER:
-        sys.exit(f"--power moet tussen 50 en {MAX_POWER} W liggen")
+    if not (args.power == 0 or 50 <= args.power <= MAX_POWER):
+        sys.exit(f"--power moet 0 zijn (stilhouden) of tussen 50 en {MAX_POWER} W liggen")
+    hold = args.power == 0
+    if hold and (args.discharge or args.auto_target or args.target_soc is not None):
+        sys.exit("--power 0 (stilhouden) gaat niet samen met --discharge of een doel-SOC")
     if not 10 <= args.seconds <= MAX_SECONDS:
         sys.exit(f"--seconds moet tussen 10 en {MAX_SECONDS} liggen")
     if args.keepalive and not 30 <= args.keepalive <= 120:
@@ -172,7 +177,11 @@ def main():
                 "Een test zou overschreven worden. Zet in de app eerst een modus "
                 "zonder cloud-sturing en probeer opnieuw."
             )
-        if args.discharge:
+        if hold:
+            # Stilhouden: 0 W, doel = huidige SOC; laden of ontladen speelt geen rol.
+            target = before["soc"]
+            power = 0
+        elif args.discharge:
             target = before["discharge_cutoff"]
             if before["soc"] < target + 5:
                 sys.exit(f"\nSOC {before['soc']} % is te dicht bij de ontlaadgrens ({target} %).")
@@ -207,7 +216,7 @@ def main():
         # In terugval-modus wacht het script daarna nog zo lang op de batterij.
         watch = args.seconds + FALLBACK_GRACE if fallback else args.seconds
         block = [1, 0, OFFSET + power, 0, OFFSET, 2, soc_raw, 0, duration, 255]
-        action = "ONTLADEN" if args.discharge else "LADEN"
+        action = "STILHOUDEN (0 W)" if hold else "ONTLADEN" if args.discharge else "LADEN"
         how = (
             f"een keer geschreven; geen stop: kijkt of de batterij na {duration} s zelf terugvalt "
             f"(vangnet: stop na {watch} s)"
@@ -293,11 +302,16 @@ def main():
         dc = sum(x["dc_w"] for x in settled) / len(settled) if settled else 0
         print("\n=== Resultaat ===")
         print(f"Gevraagd: {power:+d} W (+ = ontladen)   gemeten AC {ac:+.0f} W, DC {dc:+.0f} W")
-        if ac and dc:
-            ratio = (dc / ac) if power < 0 else (ac / dc)
-            print(f"Rendement: {ratio * 100:.1f} %")
-        sign_ok = (ac < -50) if power < 0 else (ac > 50)
-        print("Teken klopt:", "ja" if sign_ok else "NEE / geen reactie")
+        if hold:
+            print(f"Voor de test: AC {before['ac_w']:+d} W, DC {before['dc_w']:+d} W")
+            still = abs(dc) < 30
+            print("Stilgehouden (batterij-DC < 30 W):", "ja" if still else "NEE")
+        else:
+            if abs(ac) >= 100 and abs(dc) >= 100:
+                ratio = (dc / ac) if power < 0 else (ac / dc)
+                print(f"Rendement: {ratio * 100:.1f} %")
+            sign_ok = (ac < -50) if power < 0 else (ac > 50)
+            print("Teken klopt:", "ja" if sign_ok else "NEE / geen reactie")
         print(f"SOC: {before['soc']} % -> {s['soc']} %")
         print("Blok overschreven tijdens test (cloud?):", "ja" if overwritten else "nee")
         if fell_back is not None:

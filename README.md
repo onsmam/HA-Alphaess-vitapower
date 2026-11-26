@@ -103,17 +103,18 @@ automation:
         target:
           entity_id: select.vitapower_control_mode
         data:
-          option: "{{ 'on' if is_state('input_select.dao_vitapower_modus', 'Aan') else 'off' }}"
+          option: "{{ 'on' if is_state('input_select.dao_vitapower_modus', 'Aan') else 'auto' }}"
 ```
 
-For DAO's `Uit` to hand the battery back to the app (as the wiki does, with
-the app set to self-consumption) rather than hold it idle, use `'auto'` in place
-of `'off'` in the last line.
+As in the wiki, DAO's `Uit` hands the battery back to the app: set the app to
+self-consumption, so the battery serves the house between DAO's charge and
+discharge hours. To hold it idle at 0 W instead, use `'off'` in place of
+`'auto'` in the last line.
 
 DAO may also be pointed at the two entities directly (`"entity set power feedin":
 "number.vitapower_power_setpoint"`, `"entity set operating mode":
 "select.vitapower_control_mode"`, with `"entity set operating mode on": "on"` and
-`"entity set operating mode off": "off"`). That has not been tried; if DAO's log
+`"entity set operating mode off": "auto"`). That has not been tried; if DAO's log
 reports `Fout bij schrijven naar …`, use the helpers.
 
 Efficiency measured on the battery, for DAO's charge and discharge stages:
@@ -174,4 +175,4 @@ with `library-` tags, see [`library/RELEASING.md`](library/RELEASING.md).
 1. Verwijder eerst je YAML `modbus:`-package voor de VitaPower en herstart (de batterij accepteert maar één client).
 2. HACS → ⋮ → **Aangepaste repositories** → deze repo, type **Integratie** → downloaden → herstarten.
 3. **Instellingen → Apparaten & diensten → Integratie toevoegen → AlphaESS VitaPower**: IP van de LAN-poort, poort 502, unit-ID 85.
-4. Bediening via DAO: zie *Wiring DAO* hierboven. `Control mode` staat standaard op *auto* (Batterij zelf): er wordt niets geschreven tot DAO of jij hem op Aan of Uit zet.
+4. Bediening via DAO: zie *Wiring DAO* hierboven. `Control mode` staat standaard op *auto* (Batterij zelf): er wordt niets geschreven tot DAO hem op Aan zet. DAO *Uit* geeft de batterij terug aan de app; zet de app daarom op zelfverbruik.

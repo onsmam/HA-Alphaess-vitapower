@@ -23,7 +23,12 @@ single client.
 - Config flow and reconfigure flow probe the battery through
   `async_get_temporary_unit` and key the entry on its serial number.
 - Diagnostics carry the raw registers without the serial number.
-- Read-only: nothing is written to the battery yet.
+- Remote control through the dispatch block: a power setpoint (number,
+  + charges, as Day Ahead Optimizer writes it) and a control mode (select:
+  on follows the setpoint, off holds the battery idle at 0 W, auto writes
+  nothing). The command is written again every 60 s and lasts 300 s in the
+  battery, so the battery takes control back itself within 5 minutes after
+  Home Assistant stops. Both entities restore their state after a restart.
 
 `.ruff.toml` and `tests/ruff.toml` are core's own Ruff configuration, so this
 folder lints here as it will there (`ruff check core`).

@@ -163,12 +163,14 @@ Geen register voor rendement gevonden → berekenen: ontladen AC/DC, laden DC/AC
 
 ## 6. Open punten
 
-1. **Dag- of totaalteller?** Controleren of 0x0120/22/24 om 00:00 naar 0 gaan.
-2. **0x0120 vs 0x0124**: DC- vs AC-kant? 0x0124 telt mogelijk alleen netladen.
-3. **Dispatch schrijven is nog niet getest** op de VitaPower.
-4. **Welke app-modus schakelt de cloud-dispatch uit?** Anders overschrijven HA en cloud elkaar (180 s).
-5. Betekenis 0x0103 (257), 0x0104 (3), 0x0700, 0x0805, 0x040E, 0x0445, 0x064A/0x0654.
-6. Update-interval van de energietellers exact bepalen.
+1. ~~Dag- of totaalteller?~~ **Totaaltellers** (bevestigd met de app), maar per omvormer: na vervanging van de omvormer begonnen ze opnieuw bij 0.
+2. **0x0120 vs 0x0124**: DC- vs AC-kant? 0x0124 ligt steeds boven 0x0120 (0,3 vs 0,2 kWh, 0,5 vs 0,4 kWh).
+3. ~~Dispatch schrijven is nog niet getest~~ **Getest op 26-11-2026**, zie §10.
+4. **Welke app-modus schakelt de cloud-dispatch uit?** In geen van de tests van §10 greep de cloud in; blijft te volgen.
+5. Betekenis 0x0103 (257), 0x0104 (3), 0x0700, 0x0805, 0x040E, 0x0445, 0x064A/0x0654, 0x0411 (24 na omvormerwissel).
+6. Update-interval van de energietellers exact bepalen (minuten achter, in batches).
+7. **0x0149–0x014B**: drie waarden die met de belasting mee opwarmen (+2,4 °C bij 5 min 3,6 kW), maar onder de laagste celtemperatuur liggen: waarschijnlijk een temperatuur per module (sensor onbekend), × 0,1 °C.
+8. **Module-indicatie in de app**: tijdens laden met 3,6 kW toonde de app de twee uitbreidingsmodules als "ontladen" (~1,2 kW elk). De celspanningen bleven daarna binnen 5 mV; geen teken van overbelasting. Ongeklaard.
 
 ## 7. Ontwerpnotities voor de integratie (`modbus_connection`)
 
@@ -220,3 +222,32 @@ python3 modbus_scan.py --host 192.168.1.28 \
 python3 modbus_scan.py --diff scan_A.csv scan_B.csv
 # daarna in HA: modbus.restart hub=vitapower
 ```
+
+## 10. Vervangende omvormer en dispatch-tests (26-11-2026)
+
+Omvormer vervangen: nieuw serienummer (0x0743), IP via DHCP nu 192.168.1.151
+(nieuw MAC-adres), firmware EMS 1.1.19-AFU → via de app bijgewerkt naar
+**1.1.24-DFU**, omvormer V3.05.008 → **V3.05.014**, ARM V2.01.001, BMS 100.
+De registermap van §3 geldt ongewijzigd. Nieuw gevonden: serienummers van de
+drie modules (ASCII, 9 registers) op **0x02E0, 0x02F0, 0x0300**; het
+serienummer ook op 0x1101.
+
+Dispatch, een FC16-write van 10 registers vanaf 0x0880, met
+`tools/vitapower_dispatch_test.py` (SOC 10,8–15,6 %):
+
+| Commando (0x0880–0x0889) | Resultaat |
+|---|---|
+| `1,0,31700,0,32000,2,250,0,150,255` (laden 300 W) | AC −300 W binnen 5 s, DC −269 W |
+| `1,0,28320,0,32000,2,32,0,300,255` (laden 3680 W, doel 12,8 %) | AC ≈ −3600 W binnen 10 s; stopt op 12,4 % (één stap van 0,4 % vóór het doel), commando blijft actief tot de duur om is |
+| `1,0,28320,0,32000,2,250,0,300,255` (laden 3680 W, 300 s) | AC −3600 W, DC −3428 W; SOC 12,4 → 15,6 %; batterij zet na 303 s zelf het stopblok terug |
+| `1,0,32500,0,32000,2,25,0,120,255` (ontladen 500 W) | AC +500 W, DC +516 W; terugval na 121 s |
+| `1,0,32000,0,32000,2,39,0,120,255` (0 W) | DC 0 W, AC ≈ −17 W (stand-by); na terugval direct weer eigen ~200 W ontladen |
+| `0,0,32000,0,32000,0,0,0,90,255` (stop) | dispatch direct uit |
+
+- Teken: onder 32000 laden, boven 32000 ontladen. SOC-doel: 0,4 % per eenheid.
+- 0x0883–84 = 32000 (in plaats van de 0 die de cloud schrijft) wordt geaccepteerd.
+- Eén write houdt het commando de hele duur vast; de batterij beëindigt het zelf.
+- Zonder dispatch volgt de batterij zijn eigen modus (hier ~200 W ontladen).
+- Na een omschakeling kunnen 0x040C/0x0126 enkele seconden achterlopen; 0x0101 (stroom) reageert sneller.
+- De SOC steeg sneller dan de opgenomen energie (286 Wh ≈ 2,4 % van 12 kWh, SOC +3,2 %); bij lage SOC herberekent de BMS.
+

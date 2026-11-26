@@ -93,7 +93,7 @@ for name, error in report.failed.items():
 | `identity` | 0x0640-0x0649, 0x0743-0x0750 | serial number, inverter and ARM firmware, EMS version |
 
 A readings poll costs four requests, the settings poll two, and the identity
-two more, once.
+two more, once. Writing a dispatch costs one.
 
 ### Measurements and settings refresh separately
 
@@ -133,13 +133,50 @@ The block stores power as P + 32000. A stopped dispatch reads 32000, which is
 `None` instead of −32000 var. The state-of-charge target is in 0.4 % steps: the
 cloud writes 25 for a 10 % cut-off.
 
-The library does not write yet. Nothing in it has been written to a VitaPower.
+### Controlling the battery
+
+`VitaPower` writes nothing but the dispatch block (0x0880-0x0889), and only
+when asked, as one FC16 request:
+
+```python
+from alphaess_modbus_vitapower import DispatchCommand
+
+# Charge at 3000 W towards 90 %, for at most 300 s.
+await vitapower.async_dispatch(
+    DispatchCommand(power=-3000, target_soc=90, duration=300)
+)
+# Hold the battery idle: 0 W.
+await vitapower.async_dispatch(DispatchCommand(power=0, target_soc=50, duration=300))
+# Hand control back now, rather than when the duration ends.
+await vitapower.async_stop_dispatch()
+```
+
+`power` follows the readings: positive discharges, negative charges, up to
+`MAX_DISPATCH_POWER` (3680 W) either way. A `DispatchCommand` beyond what the
+battery can do raises `ValueError` before anything is written.
+
+Verified on a VitaPower 3600 AC (EMS 1.1.19 and 1.1.24):
+
+- The battery follows the command within about 10 s; asked for 3680 W it
+  charges at about 3600 W on the AC side.
+- 0 W holds it idle, which a battery left to itself is not: between commands
+  it follows the mode set in the vendor's app.
+- It ends the command itself once `duration` has passed, within 1-3 s, and
+  writes the stopped block back: a caller that stops writing hands control
+  back after at most the duration. Writing again replaces the command.
+- It stops charging one 0.4 % step short of `target_soc`, and leaves the
+  command running until the duration ends.
+- The power registers can lag a few seconds behind a change of command.
+
+`dispatch_command` is the command last written; after a readings poll,
+`dispatch_overridden` tells whether something else, such as the vendor's
+cloud, has since written a different one.
 
 ### Efficiency
 
 No register holds the conversion efficiency, so `VitaPower.efficiency` works it
 out from the last readings poll: AC over DC while discharging, DC over AC while
-charging. Below 100 W on either side it is `None`, as standby draw dominates;
+charging. Below 300 W on either side it is `None`, as standby draw dominates;
 measured values run from 89 % at 500 W to 93 % at 800 W and 3.7 kW.
 
 ## Checking a real battery

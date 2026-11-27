@@ -72,43 +72,49 @@ command is written again at the next renewal.
 ### Wiring DAO
 
 As in [DAO's AlphaESS examples](https://github.com/corneel27/day-ahead/wiki/09.-Voorbeelden-AlphaESS),
-let DAO write two helpers and copy them over with an automation. Create an
-`input_number.dao_vitapower_vermogen` (−3680 to 3680, step 1, W) and an
-`input_select.dao_vitapower_modus` (`Aan`, `Uit`), and in DAO's battery settings:
+let DAO write three helpers and copy them over with an automation. Create:
+
+| Helper | Type | Settings |
+| :--- | :--- | :--- |
+| `input_number.dao_vitapower_vermogen` | Number | −3680 to 3680, step 1, W |
+| `input_select.dao_vitapower_modus` | Dropdown | `Aan`, `Uit` |
+| `input_boolean.dao_vitapower_balanceren` | Toggle | |
+
+In DAO's battery settings:
 
 ```json
 "entity set power feedin": "input_number.dao_vitapower_vermogen",
 "entity set operating mode": "input_select.dao_vitapower_modus",
 ```
 
+and in its `grid` settings:
+
+```json
+"entity balance switch": "input_boolean.dao_vitapower_balanceren",
+```
+
 Leave `entity stop inverter` unset. The automation needs no timers, durations
 or SOC targets: the integration renews the command and picks the targets.
 
-```yaml
-automation:
-  - alias: "DAO -> VitaPower"
-    mode: queued
-    triggers:
-      - trigger: state
-        entity_id:
-          - input_number.dao_vitapower_vermogen
-          - input_select.dao_vitapower_modus
-    actions:
-      - action: number.set_value
-        target:
-          entity_id: number.vitapower_power_setpoint
-        data:
-          value: "{{ states('input_number.dao_vitapower_vermogen') | int(0) }}"
-      - action: select.select_option
-        target:
-          entity_id: select.vitapower_control_mode
-        data:
-          option: "{{ 'on' if is_state('input_select.dao_vitapower_modus', 'Aan') else 'off' }}"
-```
+[`examples/dao_vitapower_automation.yaml`](examples/dao_vitapower_automation.yaml)
+is the automation, ready to paste in **Settings → Automations → Create
+automation → ⋮ → Edit in YAML**. It checks, in this order:
 
-DAO's `Uit` holds the battery idle at 0 W, as DAO planned it. For `Uit` to hand
-the battery back to the app instead (as in the wiki, with the app set to
-self-consumption), use `'auto'` in place of `'off'` in the last line.
+| DAO | Control mode | Battery |
+| :--- | :--- | :--- |
+| balance switch on | `auto` | its own mode: with the app on self-consumption, it follows the grid meter to keep it at 0 |
+| `Aan`, setpoint + or − | `on` | charges (+) or discharges (−) at the setpoint, up to 3680 W, also to feed in when prices are high |
+| `Uit` | `off` | idle at 0 W, as DAO planned it |
+
+DAO chooses per interval: a fixed setpoint follows its plan exactly, including
+discharging at full power to sell, but the difference between its forecast and
+the real house load goes to or comes from the grid; balancing makes up that
+difference, but feeds in no more than the house uses. The automation also runs
+when Home Assistant starts, so the battery is back on DAO's plan after a
+restart.
+
+For `Uit` to hand the battery back to the app instead (as in the wiki), use
+`auto` in place of `off` in the automation's default.
 
 DAO may also be pointed at the two entities directly (`"entity set power feedin":
 "number.vitapower_power_setpoint"`, `"entity set operating mode":
@@ -163,6 +169,10 @@ value to compare with the app, [`tools/vitapower_dispatch_test.py`](tools/vitapo
 runs one confirmed dispatch test, and [`examples/vitapower_yaml_package.yaml`](examples/vitapower_yaml_package.yaml)
 the YAML package this replaces.
 
+The icon and logo Home Assistant shows are in
+`custom_components/alphaess_modbus_vitapower/brand/`; `scripts/sync_custom.py`
+keeps them as they are.
+
 ## Releases
 
 The HACS integration is released with bare version tags (`0.2.0`), the version
@@ -174,4 +184,9 @@ with `library-` tags, see [`library/RELEASING.md`](library/RELEASING.md).
 1. Verwijder eerst je YAML `modbus:`-package voor de VitaPower en herstart (de batterij accepteert maar één client).
 2. HACS → ⋮ → **Aangepaste repositories** → deze repo, type **Integratie** → downloaden → herstarten.
 3. **Instellingen → Apparaten & diensten → Integratie toevoegen → AlphaESS VitaPower**: IP van de LAN-poort, poort 502, unit-ID 85.
-4. Bediening via DAO: zie *Wiring DAO* hierboven. `Control mode` staat standaard op *auto* (Batterij zelf): er wordt niets geschreven tot DAO hem op Aan of Uit zet. DAO *Uit* houdt de batterij stil op 0 W.
+4. Bediening via DAO: maak de drie helpers uit *Wiring DAO* hierboven, zet ze in DAO en plak [`examples/dao_vitapower_automation.yaml`](examples/dao_vitapower_automation.yaml) als automation (Instellingen → Automatiseringen → Nieuw → ⋮ → Bewerken in YAML).
+   - DAO *balanceren* aan → *auto*: de batterij volgt zijn eigen modus (app op Eigen verbruik: nul op de meter).
+   - DAO *Aan* → *on*: laden (+) of ontladen (−) op het vermogen van DAO, ook maximaal terugleveren.
+   - DAO *Uit* → *off*: stil op 0 W.
+
+   `Control mode` staat standaard op *auto*: er wordt niets geschreven tot DAO hem op Aan of Uit zet.

@@ -12,6 +12,7 @@ can run it:
 - strings.json -> translations/en.json, with every [%key:...] reference
   resolved against a Home Assistant install; translations/nl.json is kept
   and checked to have the same keys
+- brand/ (the icon and logo Home Assistant shows) is kept as it is
 - manifest.json with the HACS fields
 - core/tests/components/alphaess_modbus_vitapower -> tests/, run against the
   custom integration with pytest-homeassistant-custom-component (snapshots
@@ -48,6 +49,8 @@ VERSION_FILE = ROOT / "custom_components" / "VERSION"
 
 # Kept in the target as is: maintained by hand.
 HANDWRITTEN = ("translations/nl.json",)
+# Directories kept in the target as they are: the brand images.
+HANDWRITTEN_DIRS = ("brand",)
 
 # Shown in the Modbus integration's strings since 2026.11; resolved from here
 # when the Home Assistant install is older.
@@ -224,6 +227,10 @@ def build(out: Path, ha: Path) -> None:
                 f"{handwritten} does not match en.json:\n"
                 f"  missing: {sorted(missing)}\n  extra: {sorted(extra)}"
             )
+
+    for handwritten in HANDWRITTEN_DIRS:
+        if (current := TARGET / handwritten).is_dir():
+            shutil.copytree(current, out / handwritten)
 
     (out / "manifest.json").write_text(_manifest(VERSION_FILE.read_text().strip()))
 

@@ -116,6 +116,26 @@ restart.
 For `Uit` to hand the battery back to the app instead (as in the wiki), use
 `auto` in place of `off` in the automation's default.
 
+#### With an EV charger
+
+Balancing follows the grid meter, which also sees the car: while the car charges
+the battery would discharge into it. [`examples/dao_vitapower_automation_ev.yaml`](examples/dao_vitapower_automation_ev.yaml)
+replaces the automation above for a house with a charger. While the car charges
+it recomputes every 15 s:
+
+| DAO | Battery while the car charges |
+| :--- | :--- |
+| balance switch on | balances the house as if the car were not there: discharges what the house needs, or charges with the sun left over |
+| `Aan`, − setpoint | discharges as DAO planned |
+| `Aan`, + setpoint | charges as DAO planned, as far as the battery's phase stays within the main fuse (25 A) |
+| `Uit` | idle at 0 W |
+
+It needs the charger's status and power, the grid power, and the power, current
+and voltage on the battery's phase; the file lists which entities to replace.
+Because the battery's own power drops out of the sums, a copy that writes to two
+helpers instead of the battery's entities shows what it would do without
+touching the battery.
+
 DAO may also be pointed at the two entities directly (`"entity set power feedin":
 "number.vitapower_power_setpoint"`, `"entity set operating mode":
 "select.vitapower_control_mode"`, with `"entity set operating mode on": "on"` and
@@ -190,3 +210,4 @@ with `library-` tags, see [`library/RELEASING.md`](library/RELEASING.md).
    - DAO *Uit* → *off*: stil op 0 W.
 
    `Control mode` staat standaard op *auto*: er wordt niets geschreven tot DAO hem op Aan of Uit zet.
+5. Laadpaal: gebruik [`examples/dao_vitapower_automation_ev.yaml`](examples/dao_vitapower_automation_ev.yaml). Terwijl de auto laadt balanceert de accu alsof de auto er niet is (geen accustroom naar de auto) en laadt hij alleen zolang zijn fase onder de 25 A blijft. Vervang de sensoren bovenin het bestand door die van jou.

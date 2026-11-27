@@ -1,0 +1,140 @@
+# Day Ahead Optimizer -> AlphaESS VitaPower, with an EV charger on the same
+# connection.
+#
+# Replaces dao_vitapower_automation.yaml; paste it in Settings -> Automations ->
+# Create automation -> ⋮ -> Edit in YAML. The DAO helpers are in the README,
+# under "Wiring DAO".
+#
+# While the car does not charge it does what dao_vitapower_automation.yaml
+# does. While it charges (recomputed every 15 s, written when the setpoint moves
+# more than 50 W):
+#
+#   DAO balance switch on -> balance the house as if the car were not there:
+#                            discharge what the house needs, or charge with the
+#                            sun left over, never into the car
+#   DAO Aan, - setpoint   -> discharge as DAO planned
+#   DAO Aan, + setpoint   -> charge as DAO planned, as far as L1 stays at or
+#                            below 25 A
+#   DAO Uit               -> idle at 0 W
+#
+# Below 250 W the battery is held at 0 W. Replace these entities with yours:
+#
+#   sensor.1_status                            charger status ('charging')
+#   sensor.1_vermogen                          charging power (W or kW)
+#   sensor.netto_vermogen                      grid power, + import, - export (W or kW)
+#   sensor.meterkast_netto_vermogen_l1_totaal  grid power on the battery's phase,
+#                                              + import, - export (W or kW)
+#   sensor.meterkast_current_l1_total          current on that phase (A), fallback
+#   sensor.meterkast_voltage_l1                voltage on that phase (V)
+#
+# and 25 (A) with your main fuse, if the battery's phase may carry another.
+alias: DAO -> VitaPower
+description: >-
+  Copies DAO's battery plan to the AlphaESS VitaPower. While the car charges and
+  DAO balances, the battery balances the house as if the car were not there; while
+  the car charges, the battery charges only as far as L1 stays at or below 25 A.
+  Needs: sensor.1_status, sensor.1_vermogen, sensor.netto_vermogen,
+  sensor.meterkast_netto_vermogen_l1_totaal (fallback sensor.meterkast_current_l1_total),
+  sensor.meterkast_voltage_l1.
+mode: queued
+max: 5
+triggers:
+  - trigger: state
+    entity_id:
+      - input_number.dao_vitapower_vermogen
+      - input_select.dao_vitapower_modus
+      - input_boolean.dao_vitapower_balanceren
+    id: dao
+  - trigger: homeassistant
+    event: start
+    id: dao
+  - trigger: state
+    entity_id: sensor.1_status
+    id: auto
+  - trigger: time_pattern
+    seconds: /15
+    id: tick
+conditions:
+  # The 15 s tick only counts while the car charges.
+  - condition: or
+    conditions:
+      - condition: trigger
+        id:
+          - dao
+          - auto
+      - condition: state
+        entity_id: sensor.1_status
+        state: charging
+actions:
+  - variables:
+      auto_laadt: "{{ is_state('sensor.1_status', 'charging') }}"
+      balanceren: "{{ is_state('input_boolean.dao_vitapower_balanceren', 'on') }}"
+      dao_aan: "{{ is_state('input_select.dao_vitapower_modus', 'Aan') }}"
+      dao_vermogen: "{{ states('input_number.dao_vitapower_vermogen') | int(0) }}"
+      # What the grid would deliver without the car and without the battery, in W
+      # (negative: sun left over).
+      huis_zonder_auto: >
+        {% set n = states('sensor.netto_vermogen') | float(0) %}
+        {% if state_attr('sensor.netto_vermogen', 'unit_of_measurement') == 'kW' %}{% set n = n * 1000 %}{% endif %}
+        {% set a = states('sensor.1_vermogen') | float(0) %}
+        {% if state_attr('sensor.1_vermogen', 'unit_of_measurement') == 'kW' %}{% set a = a * 1000 %}{% endif %}
+        {% set b = states('sensor.vitapower_ac_power') | float(0) %}
+        {{ (n + b - a) | round(0) }}
+      # How far the battery (on L1) may charge while L1 stays at or below 25 A
+      # (25 A x the L1 voltage, 230 V without a reading), in W. From the signed L1 power
+      # (+ import, - export); without it, from the L1 current, which has no sign
+      # and so counts export as import (stricter); without either: 8 A.
+      laadgrens: >
+        {% set laad_nu = [-(states('sensor.vitapower_ac_power') | float(0)), 0] | max %}
+        {% set pl1 = states('sensor.meterkast_netto_vermogen_l1_totaal') | float(none) %}
+        {% set il1 = states('sensor.meterkast_current_l1_total') | float(none) %}
+        {% set v = states('sensor.meterkast_voltage_l1') | float(0) %}
+        {% set v = v if 180 < v < 270 else 230 %}
+        {% if pl1 is not none %}
+          {% if state_attr('sensor.meterkast_netto_vermogen_l1_totaal', 'unit_of_measurement') == 'kW' %}{% set pl1 = pl1 * 1000 %}{% endif %}
+          {% set g = laad_nu + 25 * v - pl1 %}
+        {% elif il1 is not none %}
+          {% set g = laad_nu + (25 - il1) * v %}
+        {% else %}
+          {% set g = 1840 %}
+        {% endif %}
+        {{ [[g, 0] | max, 3680] | min | round(0) }}
+      # band: how far the setpoint may drift before it is written again.
+      gewenst: >
+        {% if auto_laadt and balanceren %}
+          {# + = the house needs power, - = sun left over, both without the car #}
+          {% set d = huis_zonder_auto | float(0) %}
+          {% set p = -([d, 3680] | min) if d > 0 else [-d, laadgrens | float(0)] | min %}
+          {% set p = 0 if p | abs < 250 else ((p / 10) | round(0) * 10) | int %}
+          {{ {'modus': 'on', 'setpoint': p, 'band': 50} }}
+        {% elif balanceren %}
+          {{ {'modus': 'auto', 'setpoint': none, 'band': 0} }}
+        {% elif dao_aan and auto_laadt and dao_vermogen > 0 %}
+          {% set p = [dao_vermogen, laadgrens | float(0)] | min %}
+          {% set p = 0 if p < 250 else ((p / 10) | round(0) * 10) | int %}
+          {{ {'modus': 'on', 'setpoint': p, 'band': 50} }}
+        {% elif dao_aan %}
+          {{ {'modus': 'on', 'setpoint': dao_vermogen, 'band': 0} }}
+        {% else %}
+          {{ {'modus': 'off', 'setpoint': none, 'band': 0} }}
+        {% endif %}
+  - if:
+      - condition: template
+        value_template: >-
+          {{ gewenst.setpoint is not none and
+             (states('number.vitapower_power_setpoint') | float(0) - gewenst.setpoint) | abs > gewenst.band }}
+    then:
+      - action: number.set_value
+        target:
+          entity_id: number.vitapower_power_setpoint
+        data:
+          value: "{{ gewenst.setpoint }}"
+  - if:
+      - condition: template
+        value_template: "{{ not is_state('select.vitapower_control_mode', gewenst.modus) }}"
+    then:
+      - action: select.select_option
+        target:
+          entity_id: select.vitapower_control_mode
+        data:
+          option: "{{ gewenst.modus }}"

@@ -1,0 +1,57 @@
+# Day Ahead Optimizer -> AlphaESS VitaPower
+#
+# Copies what DAO writes into three helpers over to the integration's control
+# entities. Paste it in Settings -> Automations -> Create automation -> ⋮ ->
+# Edit in YAML. The helpers and DAO's settings are in the README, under
+# "Wiring DAO".
+#
+#   DAO balance switch on  -> auto: the battery's own mode (in the app:
+#                             self-consumption, following the grid meter)
+#   DAO Aan, + / - setpoint -> on: charge (+) or discharge (-) at that power,
+#                             up to 3680 W, also to feed in at high prices
+#   DAO Uit                -> off: hold the battery idle at 0 W
+alias: DAO -> VitaPower
+description: Copies DAO's battery plan to the AlphaESS VitaPower.
+mode: queued
+triggers:
+  - trigger: state
+    entity_id:
+      - input_number.dao_vitapower_vermogen
+      - input_select.dao_vitapower_modus
+      - input_boolean.dao_vitapower_balanceren
+  - trigger: homeassistant
+    event: start
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: input_boolean.dao_vitapower_balanceren
+            state: "on"
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.vitapower_control_mode
+            data:
+              option: auto
+      - conditions:
+          - condition: state
+            entity_id: input_select.dao_vitapower_modus
+            state: Aan
+        sequence:
+          - action: number.set_value
+            target:
+              entity_id: number.vitapower_power_setpoint
+            data:
+              value: "{{ states('input_number.dao_vitapower_vermogen') | int(0) }}"
+          - action: select.select_option
+            target:
+              entity_id: select.vitapower_control_mode
+            data:
+              option: "on"
+    default:
+      - action: select.select_option
+        target:
+          entity_id: select.vitapower_control_mode
+        data:
+          option: "off"
